@@ -58,7 +58,6 @@ def compare_matches(str, ind, left = 0):
 Iterative implementation. 
 O(n)
 Issues:
-    Move l, r computation to compare_matches
     index wrangling bit too complicated, hard to debug
 '''
 def z_algorithm(str):
@@ -71,27 +70,31 @@ def z_algorithm(str):
 
     # Base case
     z_values[0] = compare_matches(str, 1)
-
-    if z_values[0] > 0:
-        l = 1
-        r = z_values[0] 
+    l, r = update_params(z_values[0], 1, 0, 0)
 
     for k in range(2, len(str)):
         if k > r:
             z_values[k-1] = compare_matches(str, k)
-            if z_values[k-1] > 0:
-                l = k
-                r = k + z_values[k-1] - 1
+            l, r = update_params(z_values[k-1], k, l, r)
 
         elif z_values[k - l-1] < r - k + 1:
             z_values[k-1] = z_values[k-l-1]
         
         else:
             z_values[k-1] = r - k + 1 + compare_matches(str, k+1, r - k + 1)
-            l = k
-            r = k + z_values[k-1] -1
+            l, r = update_params(z_values[k-1], k, l, r)
 
     return z_values
+
+'''
+Update left, right based on whether z_value is non zero
+'''
+def update_params(z_value, k, left, right):
+    if z_value > 0:
+        left = k
+        right = z_value + k - 1
+
+    return left, right
 
 
 def z_algorithm_pattern_match(ref, pat):
