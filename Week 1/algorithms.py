@@ -36,17 +36,15 @@ def naive_z_algorithm(str):
 
 
 '''Comparison O(n-i) -> O(n)'''
-def compare_matches(str, ind):
+def compare_matches(str, ind, r = None):
     if ind >= len(str):
         raise ValueError("Invalid index")
-
-    left = 0
-    right = ind
+    
     count = 0
-    while str[left] == str[right]:
-        count, right, left = count+1, right+1, left+1
-
-        if right >= len(str):
+    for left, right in enumerate(range(ind, len(str))):
+        if str[left] == str[right]:
+            count += 1
+        else:
             break
 
     return count
@@ -90,12 +88,27 @@ def z_algorithm(str):
             r = k + z_values[k-1] + 1
 
     return z_values
-            
+
+
+def z_algorithm_pattern_match(ref, pat):
+    # O(m+n)
+    str = pat + '$' + ref
+    
+    z_values = z_algorithm(str)
+    print(z_values)
+
+    for i in range(len(pat), len(z_values)):
+        if z_values[i] == len(pat):
+            print(i - len(pat)+1)
+
     
 if __name__ == "__main__":
     # naive_pattern_match('bbabaxababay', 'aba')
     print(naive_z_algorithm("ababac"))
-    print(z_algorithm("ababac"))
+    # print(z_algorithm("ababac"))
+    # z_algorithm_pattern_match('bbabaxababay', 'aba')
+    # print(z_algorithm('aba$bbabaxababay'))
+    # print(naive_z_algorithm('aba$bbabaxababay'))
 
         
                     
