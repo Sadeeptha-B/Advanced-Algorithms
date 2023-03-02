@@ -36,14 +36,19 @@ def naive_z_algorithm(str):
 
 
 '''Comparison O(n-i) -> O(n)'''
-def compare_matches(str, ind, r = None):
+def compare_matches(str, ind, left = 0):
     if ind >= len(str):
         raise ValueError("Invalid index")
     
+    if left > ind:
+        raise ValueError("left cannot be greater than ind")
+    
     count = 0
-    for left, right in enumerate(range(ind, len(str))):
+
+    for right in range(ind, len(str)):
         if str[left] == str[right]:
             count += 1
+            left += 1
         else:
             break
 
@@ -74,7 +79,6 @@ def z_algorithm(str):
     for k in range(2, len(str)):
         if k > r:
             z_values[k-1] = compare_matches(str, k)
-            
             if z_values[k-1] > 0:
                 l = k
                 r = k + z_values[k-1] - 1
@@ -83,9 +87,9 @@ def z_algorithm(str):
             z_values[k-1] = z_values[k-l-1]
         
         else:
-            z_values[k-1] = r - k + 1 + compare_matches(str, k+1)
+            z_values[k-1] = r - k + 1 + compare_matches(str, k+1, r - k + 1)
             l = k
-            r = k + z_values[k-1] + 1
+            r = k + z_values[k-1] -1
 
     return z_values
 
@@ -95,7 +99,6 @@ def z_algorithm_pattern_match(ref, pat):
     str = pat + '$' + ref
     
     z_values = z_algorithm(str)
-    print(z_values)
 
     for i in range(len(pat), len(z_values)):
         if z_values[i] == len(pat):
@@ -103,10 +106,11 @@ def z_algorithm_pattern_match(ref, pat):
 
     
 if __name__ == "__main__":
-    # naive_pattern_match('bbabaxababay', 'aba')
-    print(naive_z_algorithm("ababac"))
+    naive_pattern_match('bbabaxababay', 'aba')
+    # print("ababac")
+    # print(naive_z_algorithm("ababac"))
     # print(z_algorithm("ababac"))
-    # z_algorithm_pattern_match('bbabaxababay', 'aba')
+    z_algorithm_pattern_match('bbabaxababay', 'aba')
     # print(z_algorithm('aba$bbabaxababay'))
     # print(naive_z_algorithm('aba$bbabaxababay'))
 
