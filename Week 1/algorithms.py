@@ -1,3 +1,4 @@
+
 '''
 Align the left side of ref and pat and compare each till either pattern matches 
 or does not match, either on match or not-match, compare from the next ref index
@@ -107,15 +108,18 @@ def z_algorithm_pattern_match(ref, pat):
         if z_values[i] == len(pat):
             print(i - len(pat)+1)
 
-    
+
 if __name__ == "__main__":
-    naive_pattern_match('bbabaxababay', 'aba')
-    # print("ababac")
-    # print(naive_z_algorithm("ababac"))
-    # print(z_algorithm("ababac"))
+    # Z algorithm
+    print(naive_z_algorithm("ababac"))
+    print(z_algorithm("ababac"))
+
+    print(z_algorithm('aba$bbabaxababay'))
+    print(naive_z_algorithm('aba$bbabaxababay'))
+
+    # Pattern match 
     z_algorithm_pattern_match('bbabaxababay', 'aba')
-    # print(z_algorithm('aba$bbabaxababay'))
-    # print(naive_z_algorithm('aba$bbabaxababay'))
+    naive_pattern_match('bbabaxababay', 'aba')
 
         
                     
