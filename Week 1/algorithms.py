@@ -109,18 +109,43 @@ def z_algorithm_pattern_match(ref, pat):
             print(i - len(pat)+1)
 
 
+def is_cyclic_rotation(str1, str2):
+    if len(str1) != len(str2):
+        raise ValueError('str1 and str2 must be of the same length')
+
+    st1 = f'{str1}${str2}'
+    st2 = f'{str2}${str1}'
+
+    z_values1 = z_algorithm(st1)
+    z_values2 = z_algorithm(st2)
+
+    flag = False
+    ind = len(z_values1) - len(str1) + 1
+
+    for i in range(len(z_values2) -1, len(str1) - 1, -1):
+        if z_values1[ind] + z_values2[i] == len(str1):
+            flag = True
+            break
+        ind += 1
+    
+    return flag
+
+
+
 if __name__ == "__main__":
     # Z algorithm
-    print(naive_z_algorithm("ababac"))
+    # print(naive_z_algorithm("ababac"))
     print(z_algorithm("ababac"))
 
-    print(z_algorithm('aba$bbabaxababay'))
+    # print(z_algorithm('aba$bbabaxababay'))
     print(naive_z_algorithm('aba$bbabaxababay'))
 
-    # Pattern match 
-    z_algorithm_pattern_match('bbabaxababay', 'aba')
-    naive_pattern_match('bbabaxababay', 'aba')
+    # # Pattern match 
+    # z_algorithm_pattern_match('bbabaxababay', 'aba')
+    # naive_pattern_match('bbabaxababay', 'aba')
 
+    # print(is_cyclic_rotation('abcdef', 'defabc'))
+    # print(is_cyclic_rotation('isa'))
         
                     
 

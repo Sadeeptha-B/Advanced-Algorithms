@@ -24,10 +24,12 @@ def generate_inputs():
             generate_string(size, prob)
 
 def time_execution():
-    start_time = timeit.default_timer()
-    print("Start time")
-    z_algorithm_pattern_match()
-    print(f"Time elapsed: {timeit.default_timer() - start_time}")
+    with open('rand_string.txt', 'r') as f:
+        for line in f:
+            str = line.strip()
+            start_time = timeit.default_timer()
+            z_algorithm_pattern_match(str)
+            print(f"Time elapsed: {timeit.default_timer() - start_time}")
 
 
 class z_algorithm_test(unittest.TestCase):
@@ -47,4 +49,4 @@ if __name__ == "__main__":
     # generate_string(5, 0.3)
     # generate_inputs()
     # z_algorithm_pattern_match('bbabaxababay', 'aba')
-    pass
+    time_execution()
