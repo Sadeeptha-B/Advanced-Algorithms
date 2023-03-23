@@ -32,9 +32,12 @@ def compare_matches(str, start, end):
         count += 1
         start += 1
         end += 1
+
+        if end >= len(str):
+            break
     
     return count
 
 if __name__ == "__main__":
     print(z_algo("ababac"))
-    
+    print(z_algo("aaaaaa"))
