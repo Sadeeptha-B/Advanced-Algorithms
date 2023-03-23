@@ -1,7 +1,7 @@
 import unittest
 import random
 import timeit
-from algorithms import z_algorithm_pattern_match
+from main import z_algorithm_pattern_match
 
 def generate_string(n, p):
     alphabet = ('H', 'T')
