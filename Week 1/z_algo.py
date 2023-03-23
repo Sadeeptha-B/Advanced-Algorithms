@@ -52,7 +52,7 @@ def z_suffix(str):
             elif z_array[ind] > rem:
                 z_array[i] = rem
             else:
-                z_array[i] = rem + compare_matches_invert(str, n - (i-l) -1, l-1)
+                z_array[i] = rem + compare_matches_invert(str, (n-1) - (i-l) -1, l-1)
                 l = i - z_array[i] + 1
                 r = i
 
