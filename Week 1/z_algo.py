@@ -45,14 +45,14 @@ def z_suffix(str):
     for i in range(len(str)-2, -1, -1):
         in_box = l <= i
         if in_box:
-            ind = n - (r-i)
+            ind = n - (r-i) - 1
             rem = i - l + 1
             if z_array[ind] < rem:
                 z_array[i] = z_array[ind]
             elif z_array[ind] > rem:
                 z_array[i] = rem
             else:
-                z_array[i] = rem + compare_matches_invert(str, i-l-1, l-1)
+                z_array[i] = rem + compare_matches_invert(str, n - (i-l) -1, l-1)
                 l = i - z_array[i] + 1
                 r = i
 
@@ -106,4 +106,13 @@ if __name__ == "__main__":
 
     # case 2c: z_(i-l) = rem
     print(z_algo("ababac"))
+
+
+    print("======================================")
+    print(z_suffix(""))
+    print(z_suffix("aaaaaa"))
+    print(z_suffix("abcdefg"))
+    print(z_suffix("abacabacc"[::-1]))
+    print(z_suffix("abacababa"[::-1]))
+    print(z_suffix("ababac"[::-1]))
 
