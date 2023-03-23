@@ -1,3 +1,4 @@
+'''Longest substring that matches the prefix at each index of the input string'''
 def z_algo(str):
     z_array = [None] * len(str)
 
@@ -28,6 +29,51 @@ def z_algo(str):
     
     return z_array
 
+
+
+'''Longest substring ending at each index that matches the suffix of the input string'''
+def z_suffix(str):
+    n = len(str)
+    z_array = [None] * n
+
+    if n == 0:
+        return z_array
+    
+    z_array[-1] = n
+    l, r = n - 1, n - 1
+
+    for i in range(len(str)-2, -1, -1):
+        in_box = l <= i
+        if in_box:
+            ind = n - (r-i)
+            rem = i - l + 1
+            if z_array[ind] < rem:
+                z_array[i] = z_array[ind]
+            elif z_array[ind] > rem:
+                z_array[i] = rem
+            else:
+                z_array[i] = rem + compare_matches_invert(str, i-l-1, l-1)
+                l = i - z_array[i] + 1
+                r = i
+
+        else:
+            z_array[i] = compare_matches_invert(str, n-1, i)
+            l = i - z_array[i] + 1
+            r = i
+
+    return z_array
+
+
+def compare_matches_invert(str, end, start):
+    count = 0
+
+    while start >= 0 and str[start] == str[end]:
+        count += 1
+        start -= 1
+        end -= 1
+
+    return count
+
 def compare_matches(str, start, end):
     count = 0
 
@@ -39,6 +85,7 @@ def compare_matches(str, start, end):
         end += 1
     
     return count
+
 
 if __name__ == "__main__":
 
