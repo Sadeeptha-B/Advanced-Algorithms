@@ -135,13 +135,13 @@ def is_cyclic_rotation(str1, str2):
 if __name__ == "__main__":
     # Z algorithm
     # print(naive_z_algorithm("ababac"))
-    print(z_algorithm("ababac"))
+    # print(z_algorithm("ababac"))
 
     # print(z_algorithm('aba$bbabaxababay'))
-    print(naive_z_algorithm('aba$bbabaxababay'))
+    # print(naive_z_algorithm('aba$bbabaxababay'))
 
     # # Pattern match 
-    # z_algorithm_pattern_match('bbabaxababay', 'aba')
+    z_algorithm_pattern_match('bbabaxababay', 'aba')
     # naive_pattern_match('bbabaxababay', 'aba')
 
     # print(is_cyclic_rotation('abcdef', 'defabc'))

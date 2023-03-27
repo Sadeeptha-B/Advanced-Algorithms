@@ -14,15 +14,48 @@ Boyer moore's algorithm for exact pattern matching
  - Galil's optimization
  - O(n/m) sublinear time
 
-
-
 '''
 def boyer_moore(ref, pat):
     
-    bad_character_matrix(pat)
+    # Pre-processing
+    bc_matrix = bad_character_matrix(pat)  # O(26m)
+    z_array = z_suffix(pat)
+    gs_array, mp_array = gs_mp(z_array, pat)
 
-''' Bad character shifts for each position and letter of the pattern
-# O(m) complexity
+    n = len(ref)
+    m = len(pat)
+    current = 0
+
+    while current + m < n:
+        for i in range(m-1, -1, -1):
+            r_ind = current + m - 1 - i
+            p_ind = m - 1 - i
+            if ref[r_ind] != pat[p_ind]:
+                char = bc_matrix[ord(ref[r_ind]) - 97]
+
+                bc = char[p_ind] if char is not None else -1
+                gs = gs_array[p_ind + 1]
+
+                bc_shift = p_ind - bc
+                
+                if gs is not None:
+                    gs_shift = p_ind + 1 - gs
+                else:
+                    gs_shift = m - 1 - mp_array[i]
+
+                shift = max(bc_shift, gs_shift)
+                current += shift 
+                break
+            
+            if i == 0:
+                print(f"match:{current}")
+                shift = m - 1 - mp_array[1]
+                current += shift
+        
+        
+''' 
+Bad character shifts for each position and letter of the pattern
+O(m) complexity
 '''
 def bad_character_matrix(pat):
     mat = [None] * ALPHABET_SIZE # O(26)
@@ -33,7 +66,6 @@ def bad_character_matrix(pat):
 
         if mat[ind] is None:
             mat[ind] = [-1]* len(pat)
-        
 
         for j in range(i, len(pat)):
             if mat[ind][j] == -1:
@@ -46,8 +78,7 @@ def bad_character_matrix(pat):
 For each suffix of the pattern, the index of the rightmost occurence of itself 
 within the pattern such that the previous letter mismatches
 '''
-def good_suffix(pat):
-    z_array = z_suffix(pat)
+def good_suffix(z_array, pat):
     m = len(pat)
     gs_array = [None]* (m + 1)
 
@@ -57,10 +88,43 @@ def good_suffix(pat):
         
     return gs_array
 
-'''Longest suffix of the good suffix that matches the prefix of the pattern'''
-def matched_prefix(pat):
-    pass
 
+'''Longest suffix of the good suffix "that matches the prefix of the pattern'''
+def matched_prefix(z_array, pat):
+    m = len(pat)
+    mp_array = [m]*(m+1)
+    ind = None
+
+    for i in range(m):
+        if i == z_array[i]-1:
+            ind = m - z_array[i]
+            mp_array[ind] = i
+        elif ind is not None:
+            ind -= 1
+            mp_array[ind] = mp_array[ind+1]
+
+    return mp_array
+
+
+'''To compute good suffix and matched prefix both'''
+def gs_mp(z_array, pat):
+    m = len(pat)
+    gs_array = [None]*(m+1)
+    mp_array = [-1]*(m+1)
+    m_ind = None
+
+    for i in range(m-1):
+        p_ind = m - z_array[i]
+        gs_array[p_ind] = i
+
+        if i == z_array[i] - 1:
+            m_ind = p_ind
+            mp_array[m_ind] = i
+        elif m_ind is not None:
+            m_ind -= 1
+            mp_array[m_ind] = mp_array[m_ind+1]
+
+    return gs_array, mp_array
 
 
 '''Longest substring ending at each index that matches the suffix of the input string'''
@@ -112,8 +176,16 @@ def compare_matches_invert(str, end, start):
 
 
 if __name__ == "__main__":
-    print(bad_character_matrix("aba"))
-    print(good_suffix("abab"))
+    # print(bad_character_matrix("acababacaba"))
+    # # print(good_suffix(z_suffix("abab"), "abab"))
+    # z_array = z_suffix("acababacaba")
+    # print(z_array)
+    # # print(good_suffix(z_array, "acababacaba"))
+    # # print(matched_prefix(z_array, "acababacaba"))
+    # print(gs_mp(z_array, "acababacaba"))
+    # print(gs_mp(z_suffix("abab"), "abab"))
+
+    boyer_moore('bbabaxababay', 'aba')
 
     
 
