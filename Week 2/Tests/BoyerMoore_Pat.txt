@@ -1,0 +1,24 @@
+﻿#NORMAL/DNA PAT
+aaba
+abcd
+qrpq
+tatgtg
+abcdef
+it
+inine
+ac
+tac
+aaattttc
+gat
+acg
+ctc
+gcc
+ga
+atcatt
+tt
+gccac
+gggcgcc
+gagcgctacgcgggc
+gatacgaatttacgtatagagcgggtcatc
+aaaaaattatatttttataattaatattta
+gcccggccccgccggcgcggcggcgccccg

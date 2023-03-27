@@ -1,5 +1,9 @@
-ALPHABET_SIZE = 26
+'''
+Author: Sadeeptha Bandara
+Credits to Raymond D'Souza for testcases and the testfile
+'''
 
+ALPHABET_SIZE = 26
 
 '''
 Boyer moore's algorithm for exact pattern matching
@@ -7,8 +11,6 @@ Boyer moore's algorithm for exact pattern matching
  - Bad character rule: Larger skips
     Bad block optimization for small alphabets
     Creating bad character matrix
-
-
 
  - Good suffix rule, matched prefix rule: less comparisons
  - Galil's optimization
@@ -21,21 +23,25 @@ def boyer_moore(ref, pat):
     bc_matrix = bad_character_matrix(pat)  # O(26m)
     z_array = z_suffix(pat)
     gs_array, mp_array = gs_mp(z_array, pat)
+    res = []
+    # print(gs_array)
+    # print(mp_array)
+    # print('-----------------------')
 
     n = len(ref)
     m = len(pat)
     current = 0
 
-
     # Align left to right
-    while current + m < n:
+    while current + m <= n:
         i = m-1
+        stop, start = m, m
 
         # Right to left scanning
         while i >= 0 and (i < start or i> stop):
             
-            r_ind = current + m - 1 - i
-            p_ind = m - 1 - i
+            r_ind = current + i 
+            p_ind = i
 
             # If mismatch
             if ref[r_ind] != pat[p_ind]:
@@ -43,35 +49,43 @@ def boyer_moore(ref, pat):
 
                 bc = char[p_ind] if char is not None else -1     
                 gs = gs_array[p_ind + 1]
+                print(p_ind +1)
 
                 bc_shift = p_ind - bc
                 
                 # Good suffix and match prefix condition
                 if gs is not None:
                     gs_shift = p_ind + 1 - gs
-                    stop = gs 
-                    start = gs - z_array[gs] + 1
+                    stop, start = gs, gs - z_array[gs] + 1
+                    # print('i run')
                 else:
                     gs_shift = m - 1 - mp_array[i]
-                    stop = mp_array[i]
-                    start = 0
+                    stop, start = mp_array[i], 0
+                    # print('mp')
+                    
+                # if bc_shift > gs_shift:
+                #     print('bc')
+                # else:
+                #     print('gs')
 
                 shift = max(bc_shift, gs_shift)
                 current += shift 
+                # print(shift)
                 break
             
             if i == 0:
-                print(f"match:{current}")
+                res.append(current)
                 shift = m - 1 - mp_array[1]
-                stop = mp_array[1]
-                start = 0
+                stop, start = mp_array[1], 0
                 current += shift
+                # print(shift)
             
             i -= 1
+        # print("=====")
+        # print(current)
+    return res
 
             
-        
-        
 ''' 
 Bad character shifts for each position and letter of the pattern
 O(m) complexity
@@ -204,7 +218,8 @@ if __name__ == "__main__":
     # print(gs_mp(z_array, "acababacaba"))
     # print(gs_mp(z_suffix("abab"), "abab"))
 
-    boyer_moore('bbabaxababay', 'aba')
+    print(boyer_moore('eovadabcdftoy', 'abcd'))
+
 
     
 
