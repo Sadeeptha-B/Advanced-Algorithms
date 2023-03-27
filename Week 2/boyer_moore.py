@@ -24,9 +24,6 @@ def boyer_moore(ref, pat):
     z_array = z_suffix(pat)
     gs_array, mp_array = gs_mp(z_array, pat)
     res = []
-    # print(gs_array)
-    # print(mp_array)
-    # print('-----------------------')
 
     n = len(ref)
     m = len(pat)
@@ -36,7 +33,7 @@ def boyer_moore(ref, pat):
     while current + m <= n:
         i = m-1
         stop, start = m, m
-
+        
         # Right to left scanning
         while i >= 0 and (i < start or i> stop):
             
@@ -49,40 +46,32 @@ def boyer_moore(ref, pat):
 
                 bc = char[p_ind] if char is not None else -1     
                 gs = gs_array[p_ind + 1]
-                print(p_ind +1)
 
+                # bad character shift
                 bc_shift = p_ind - bc
                 
                 # Good suffix and match prefix condition
                 if gs is not None:
-                    gs_shift = p_ind + 1 - gs
+                    gs_shift = m -1 - gs
                     stop, start = gs, gs - z_array[gs] + 1
-                    # print('i run')
                 else:
-                    gs_shift = m - 1 - mp_array[i]
+                    gs_shift = m - 1 - mp_array[i+1]
                     stop, start = mp_array[i], 0
-                    # print('mp')
-                    
-                # if bc_shift > gs_shift:
-                #     print('bc')
-                # else:
-                #     print('gs')
 
+                # Perform optimal shift
                 shift = max(bc_shift, gs_shift)
                 current += shift 
-                # print(shift)
                 break
             
+            # Match occurence
             if i == 0:
                 res.append(current)
                 shift = m - 1 - mp_array[1]
                 stop, start = mp_array[1], 0
                 current += shift
-                # print(shift)
             
             i -= 1
-        # print("=====")
-        # print(current)
+        
     return res
 
             
@@ -218,8 +207,9 @@ if __name__ == "__main__":
     # print(gs_mp(z_array, "acababacaba"))
     # print(gs_mp(z_suffix("abab"), "abab"))
 
-    print(boyer_moore('eovadabcdftoy', 'abcd'))
-
+    print(boyer_moore('aagacacataaagaagctttataacgtcaaggtcgcaaggcactacctattgctccccgacggttaaggttagcagctccactcccgcggaataggtacgaattatgagtgactgatttttctggtacccgggcaagagcctaaactgagcgaaacattttcattcctggctgaagatgttcatagcgtccacctcggttggccgttattccagcactggagaacaccggtcaaccaattggccactgtgcacgcgtcgttcggctgtggaagcggcggaactgacgaatagtttacctggctgtactgaacgtacacccgtctgccgttgttgttaatccattgtgccaatttagctcaccgagtcacgcgacactctgggcttgagaggcgggcgagtggttcacatggcgcggagtgtagtttgtgagatattctaggaagaacgtcgttgctaggtcacggcacagatacaggatccatacaatagttagctagcctggatggacttattctcatattgcttgtgagcagcctttaaagtggggtctacagaagtcagtaggcttatgtcgcggaaccggggccacgcgagatctaatacggttgcgaagggcgtcttatcagcgggatactgagccaatggcagtgataattccgtaggttctataagtcgggtatcagcgaccgcctagccatacccgaaatgtcggcattcctcggcaacgaacgaccatgaaccgctaagaagcgacgagccgaatcagatccggacaccgcgacccctcaactccgggctttctgagcatgaagcgtgctacatcgattttgaagtgaaagatactgggtggcgccgagtatgagtaggaggaccacatggagctttgaagatggtatttaaccccggggttatggacctcctaccggccttccgggttcgtagtcgaaggttgtccatacaggtttcgtttttgtcaaccgagcccggcaagcagtacga',
+                       'ctc'))
+    
 
     
 

@@ -40,7 +40,5 @@ for pat in patterns:
             print(f'text = {text}')
             print(f'pat = {pat}')
 
-
-
         #Use regex as the expected behaviour
 
