@@ -26,22 +26,35 @@ def boyer_moore(ref, pat):
     m = len(pat)
     current = 0
 
+
+    # Align left to right
     while current + m < n:
-        for i in range(m-1, -1, -1):
+        i = m-1
+
+        # Right to left scanning
+        while i >= 0 and (i < start or i> stop):
+            
             r_ind = current + m - 1 - i
             p_ind = m - 1 - i
+
+            # If mismatch
             if ref[r_ind] != pat[p_ind]:
                 char = bc_matrix[ord(ref[r_ind]) - 97]
 
-                bc = char[p_ind] if char is not None else -1
+                bc = char[p_ind] if char is not None else -1     
                 gs = gs_array[p_ind + 1]
 
                 bc_shift = p_ind - bc
                 
+                # Good suffix and match prefix condition
                 if gs is not None:
                     gs_shift = p_ind + 1 - gs
+                    stop = gs 
+                    start = gs - z_array[gs] + 1
                 else:
                     gs_shift = m - 1 - mp_array[i]
+                    stop = mp_array[i]
+                    start = 0
 
                 shift = max(bc_shift, gs_shift)
                 current += shift 
@@ -50,7 +63,13 @@ def boyer_moore(ref, pat):
             if i == 0:
                 print(f"match:{current}")
                 shift = m - 1 - mp_array[1]
+                stop = mp_array[1]
+                start = 0
                 current += shift
+            
+            i -= 1
+
+            
         
         
 ''' 
