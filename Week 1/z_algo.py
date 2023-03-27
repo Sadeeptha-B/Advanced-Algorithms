@@ -10,13 +10,17 @@ def z_algo(str):
 
     for i in range(1, len(str)):
         in_box = i <= r
+
         if in_box:
             ind = i - l
             rem = r - i + 1
+
             if z_array[ind] < rem:
                 z_array[i] = z_array[ind]
+
             elif z_array[ind] > rem:
                 z_array[i] = rem
+                
             else:
                 z_array[i] = rem + compare_matches(str, r-i+1, r+1)
                 r = i + z_array[i] - 1
@@ -44,13 +48,17 @@ def z_suffix(str):
 
     for i in range(len(str)-2, -1, -1):
         in_box = l <= i
+
         if in_box:
             ind = n - (r-i) - 1
             rem = i - l + 1
+
             if z_array[ind] < rem:
                 z_array[i] = z_array[ind]
+
             elif z_array[ind] > rem:
                 z_array[i] = rem
+
             else:
                 z_array[i] = rem + compare_matches_invert(str, (n-1) - (i-l) -1, l-1)
                 l = i - z_array[i] + 1
