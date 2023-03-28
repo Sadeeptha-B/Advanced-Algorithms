@@ -1,15 +1,47 @@
 def kmp(ref, pat):
-    pass
+    sp_array = sp_i(pat)
+    res = []
+
+    n = len(ref)
+    m = len(pat)
+    current = 0
+
+    while current + m <= n:
+        # print(current)
+        i = 0
+        while i < m:
+            
+            r_ind = current + i 
+            p_ind = i
+
+            if ref[r_ind] != pat[p_ind]:
+                shift = p_ind - sp_array[p_ind]
+                break
+
+            i += 1
+
+        if i == m:
+            res.append(current)
+            shift = m - sp_array[m] 
+
+        current += shift
+        # print("======")
+
+    return res
+
 
 def sp_i(pat):
     m = len(pat)
-    sp_array = [None]* m
+    sp_array = [0]* (m+1)
+    sp_array[0] = -1
 
+    z_array = z_algo(pat)
 
+    for j in range(m-1, 0, -1):
+        i = j + z_array[j] - 1
+        sp_array[i+1] = z_array[j]
 
-
-    pass
-
+    return sp_array
 
 
 '''Longest substring that matches the prefix at each index of the input string'''
@@ -62,4 +94,5 @@ def compare_matches(str, start, end):
 
 
 if __name__ == "__main__":
-    pass
+    print(sp_i("aba"))
+    print(kmp('bbabaxababay', 'aba'))

@@ -1,6 +1,7 @@
 import os
 import re
 from boyer_moore import boyer_moore
+from knuth_morris_pratt import kmp
 
 """
     Expected return is an list with '0' indexing and the first index of the pattern recognised
@@ -32,6 +33,7 @@ with open(text_path, mode="r", encoding="utf-8-sig") as f:
 for pat in patterns:
     for text in texts:
         bm_result = boyer_moore(text, pat)
+        # bm_result = kmp(text, pat)
         re_result = []
         for match in re.finditer(f'(?=({pat}))', text, flags=re.IGNORECASE):
             re_result.append(match.start())
