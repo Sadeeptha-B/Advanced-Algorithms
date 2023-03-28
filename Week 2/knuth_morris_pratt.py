@@ -1,3 +1,19 @@
+'''
+Author: Sadeeptha Bandara
+
+Knuth-Morris-Pratt algorithm
+
+- Performs comparisons each iteration
+- Within the matched region, shifts according to the 
+longest proper suffix of prefix pat[1..i] where i+1 is point
+of mismatch
+
+
+- O(n+m) algorithm: performs comparison for each index only
+once
+
+'''
+
 def kmp(ref, pat):
     sp_array = sp_i(pat)
     res = []
@@ -5,38 +21,49 @@ def kmp(ref, pat):
     n = len(ref)
     m = len(pat)
     current = 0
+    start = 0
 
+    # Aligning pattern to reference
     while current + m <= n:
-        # print(current)
-        i = 0
-        while i < m:
-            
-            r_ind = current + i 
-            p_ind = i
 
+        p_ind = start
+
+        # Comparing left to right within an alignment
+        while p_ind < m:
+            
+            r_ind = current + p_ind 
+
+            # First mismatch
             if ref[r_ind] != pat[p_ind]:
                 shift = p_ind - sp_array[p_ind]
                 break
 
-            i += 1
+            p_ind += 1
 
-        if i == m:
+        # If a match is found
+        if p_ind == m:
             res.append(current)
             shift = m - sp_array[m] 
 
+        # Optimization to avoid re-comparing matching regions
+        start = sp_array[p_ind] if sp_array[p_ind] > 0 else 0
         current += shift
-        # print("======")
 
     return res
 
-
+'''
+SP[i] array:
+Computes for each pat[0..i] the longest proper suffix that matches the prefix 
+Returns: A list of len(pat) +1. First index will correspond to the pat[0..-1] case
+other indices for each prefix of the string
+'''
 def sp_i(pat):
     m = len(pat)
     sp_array = [0]* (m+1)
     sp_array[0] = -1
 
     z_array = z_algo(pat)
-
+    
     for j in range(m-1, 0, -1):
         i = j + z_array[j] - 1
         sp_array[i+1] = z_array[j]

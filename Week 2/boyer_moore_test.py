@@ -32,8 +32,8 @@ with open(text_path, mode="r", encoding="utf-8-sig") as f:
 
 for pat in patterns:
     for text in texts:
-        bm_result = boyer_moore(text, pat)
-        # bm_result = kmp(text, pat)
+        # bm_result = boyer_moore(text, pat)
+        bm_result = kmp(text, pat)
         re_result = []
         for match in re.finditer(f'(?=({pat}))', text, flags=re.IGNORECASE):
             re_result.append(match.start())
