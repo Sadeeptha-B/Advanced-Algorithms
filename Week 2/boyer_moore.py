@@ -9,16 +9,12 @@ ALPHABET_SIZE = 26
 Boyer moore's algorithm for exact pattern matching
  - Allows you to skip unnecessary alignments in the text
  - Bad character rule: Larger skips
-    Bad block optimization for small alphabets
-    Creating bad character matrix
-
  - Good suffix rule, matched prefix rule: less comparisons
  - Galil's optimization
  - O(n/m) sublinear time
-
 '''
 def boyer_moore(ref, pat):
-    
+
     # Pre-processing
     bc_matrix = bad_character_matrix(pat)  # O(26m)
     z_array = z_suffix(pat)
