@@ -95,6 +95,7 @@ def compare_matches(str, start, end):
     return count
 
 
+
 if __name__ == "__main__":
 
     # empty
