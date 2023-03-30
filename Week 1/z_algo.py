@@ -121,7 +121,7 @@ if __name__ == "__main__":
     print(z_suffix(""))
     print(z_suffix("aaaaaa"))
     print(z_suffix("abcdefg"))
-    print(z_suffix("abacabacc"[::-1]))
-    print(z_suffix("abacababa"[::-1]))
-    print(z_suffix("ababac"[::-1]))
+    print(z_suffix("abacabacc"))
+    print(z_suffix("abacababa"))
+    print(z_suffix("ababac"))
 
