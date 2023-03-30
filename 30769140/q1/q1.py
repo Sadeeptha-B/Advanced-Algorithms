@@ -177,20 +177,110 @@ def write_output(output):
         file.write(f"\n{output}")
     
 
-def z_prefix(ref, pat):
+def compare_matches(ref, pat, start , i):
+    count = 0
 
+    while start < len(pat) and i < len(ref):
+        if ref[i] != pat[start]:
+            break
+
+        count += 1
+        start += 1
+        i+= 1
+    
+    return count
+
+
+def z_prefix(ref, pat, z_pat):
     n = len(ref)
-    m = len(pat)
 
-    z_array = [None] * (n + m)
+    z_array = [None]*n
 
-    if len(ref) == 0:
+    if n == 0:
+        return z_array
+    
+    r,l = -1, -1
+
+    for i in range(0, n):
+        in_box = i <= r
+
+        if in_box:
+            ind = i - l
+            rem = r - i + 1
+            z_ind = z_pat[ind]
+
+            if z_ind < rem:
+                z_array[i] = z_ind
+
+            elif z_ind > rem:
+                z_array[i] = rem 
+                
+                
+            else:
+                z_array[i] = rem + compare_matches(ref, pat, r-i+1, r+1)
+                r = i + z_array[i] - 1
+                l = i
+
+        else:
+            z_array[i] = compare_matches(ref, pat, 0, i)
+            r = i + z_array[i] - 1
+            l = i
+        # print(i)
+
+    return z_array
+
+
+def z_suffix(ref, pat, z_pat):
+    n = len(ref)
+
+    z_array = [None]* n
+
+    if n == 0:
+        return z_array
+    
+    r, l = n, n
+
+    for i in range(n-1, -1, -1):
+        in_box = l <= i
+
+        if in_box:
+            ind = n - (r-i) - 1
+            rem = i - l + 1
+
+            if z_array[ind] < rem:
+                 z_array[i] = z_array[ind]
+
+            elif z_array[ind] > rem:
+                z_array[i] = rem
+
+            else:
+                z_array[i] = rem + compare_matches_invert(str, (n-1) - (i-l) -1, l-1)
+                l = i - z_array[i] + 1
+                r = i
+
+        else:
+            z_array[i] = compare_matches_invert(str, n-1, i)
+            l = i - z_array[i] + 1
+            r = i
+
+    return z_array
+
+
+def compare_matches_invert(ref, pat, start, i):
+    pass
+
+
+
+def z_base(str):
+    z_array = [None] * len(str)
+
+    if len(str) == 0:
         return z_array
 
-    z_array[0] = n + m 
+    z_array[0] = len(str)
     r, l = 0, 0
 
-    for i in range(1, n+m):
+    for i in range(1, len(str)):
         in_box = i <= r
 
         if in_box:
@@ -204,46 +294,27 @@ def z_prefix(ref, pat):
                 z_array[i] = rem
                 
             else:
-                print(i - len(pat))
-                z_array[i] = rem + compare_matches(ref, pat, r-i+1, r+1)
+                z_array[i] = rem + compare_matches_base(str, r-i+1, r+1)
                 r = i + z_array[i] - 1
                 l = i
 
         else:
-            z_array[i] = compare_matches(ref, pat, 0, i)     
+            z_array[i] = compare_matches_base(str, 0, i)     
             r = i + z_array[i] - 1
             l = i
     
-        # print(r,l)
     return z_array
+    
 
-
-
-def compare_matches(ref, pat, start , i):
+def compare_matches_base(str, start, end):
     count = 0
 
-    if i >= len(pat):
-        st = ref
-        i =i - len(pat)
-    else:
-        st = pat
-
-
-    while start < len(pat) and i < len(st):
-        if st[i] != pat[start]:
-            break
+    while end < len(str) and str[start] == str[end]:
         count += 1
         start += 1
-        i+= 1
+        end += 1
     
-
     return count
-
-
-def z_suffix(ref, pat):
-    pass
-
-    
 
 if __name__ == "__main__":
     # _, filename1, filename2 = sys.argv
@@ -255,4 +326,7 @@ if __name__ == "__main__":
 
     # print(pattern_match_transpose("babbababaabbaba", "abba"))
     # print(z_prefix_suffix("abba$babbababaabbaba$abba"))
-    print(z_prefix("babbababaabbaba", "abba"))
+    # print(z_prefix("babbababaabbaba", "abba"))
+    z_pat = z_base("abba")
+    print(z_pat)
+    print(z_prefix("babbababaabbaba", "abba", z_pat))
