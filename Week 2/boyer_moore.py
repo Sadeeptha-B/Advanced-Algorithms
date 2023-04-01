@@ -45,7 +45,7 @@ def boyer_moore(ref, pat):
 
                 # bad character shift
                 bc_shift = p_ind - bc
-                
+                 
                 # Good suffix and match prefix condition
                 if gs is not None:
                     gs_shift = m -1 - gs
