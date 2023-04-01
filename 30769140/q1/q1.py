@@ -43,10 +43,7 @@ def pattern_match_transpose(ref, pat):
             
     return res, transpose
 
-'''
-Z algorithm implemented for both prefix and suffix. Primarily to reduce the complexity cost of 
-looping twice to compute z_prefix and z_suffix separately.
-'''
+
 def z_prefix_suffix(ref, pat):
     n = len(ref)
     z_array = [[None, None] for _ in range(n)]
@@ -70,13 +67,9 @@ def z_prefix_suffix(ref, pat):
         z_array[i_p][PREFIX], r_p, l_p = z_i(ref, pat, z_pat, r_p, l_p, i_p)
         z_array[i_s][SUFFIX], r_s, l_s = z_suffix_i(ref, pat, z_suffix_pat, r_s, l_s, i_s)
 
-
     return z_array
 
 
-'''
-Compute the z_prefix value at a particular index provided the r, l and z_array
-'''
 def z_i(ref, pat, z_pat, r, l, i):
     in_box = i <= r
 
@@ -105,9 +98,6 @@ def z_i(ref, pat, z_pat, r, l, i):
     return z_value, r, l
 
 
-'''
-Compute the z_suffix value at a particular index provided the r,l and z_array
-'''
 def z_suffix_i(ref, pat, z_pat, r, l, i):
     m  = len(pat)
 
@@ -134,6 +124,7 @@ def z_suffix_i(ref, pat, z_pat, r, l, i):
         l = i - z_value + 1
         r = i
     return z_value, r, l
+
 
 # Basic z algo implementations for a provided string
 # ====================================================================================================
@@ -264,7 +255,6 @@ def compare_matches_invert(ref, pat, start, i):
     return count
 
 
-
 # I/O operations
 # =========================================================================================================
 
@@ -282,88 +272,6 @@ def write_output(output):
         file.write(f"\n{output}")
     
 
-def z_prefix(ref, pat, z_pat):
-    n = len(ref)
-
-    z_array = [None]*n
-
-    if n == 0:
-        return z_array
-    
-    r,l = -1, -1
-
-    for i in range(0, n):
-        in_box = i <= r
-
-        if in_box:
-            ind = i - l
-            rem = r - i + 1
-            z_ind = z_pat[ind]
-
-            if z_ind < rem:
-                z_array[i] = z_ind
-
-            elif z_ind > rem:
-                z_array[i] = rem 
-                
-                
-            else:
-                z_array[i] = rem + compare_matches(ref, pat, r-i+1, r+1)
-                r = i + z_array[i] - 1
-                l = i
-
-        else:
-            z_array[i] = compare_matches(ref, pat, 0, i)
-            r = i + z_array[i] - 1
-            l = i
-        # print(i)
-
-    return z_array
-
-
-def z_suffix(ref, pat, z_pat):
-    n = len(ref)
-    m = len(pat)
-
-    z_array = [None]* n
-
-    if n == 0:
-        return z_array
-    
-    r, l = n, n
-
-    for i in range(n-1, -1, -1):
-        in_box = l <= i
-
-        if in_box:
-            ind = m - (r-i) - 1
-            rem = i - l + 1
-            z_ind = z_pat[ind]
-
-            if z_ind < rem:
-                 z_array[i] = z_ind
-
-            elif z_ind > rem:
-                z_array[i] = rem
-
-            else:
-                print(i)
-                z_array[i] = rem + compare_matches_invert(ref, pat,  (m-1) - (i-l+1), l-1)
-                l = i - z_array[i] + 1
-                r = i
-
-        else:
-            z_array[i] = compare_matches_invert(ref, pat, m - 1, i)
-            l = i - z_array[i] + 1
-            r = i
-
-    return z_array
-
-
-
-
-
-
 
 if __name__ == "__main__":
     # _, filename1, filename2 = sys.argv
@@ -374,10 +282,3 @@ if __name__ == "__main__":
     # q1_solution(text, pattern)    
 
     print(pattern_match_transpose("babbababaabbaba", "abba"))
-    # print(z_prefix_suffix("abba$babbababaabbaba$abba"))
-    # print(z_prefix("babbababaabbaba", "abba"))
-    # z_pat = z_base("abba")
-    # print(z_pat)
-    # print(z_prefix("babbababaabbaba", "abba", z_pat))
-    # print(z_suffix("babbababaabbaba", "abba", [1,0, 0, 4]))
-    # print(z_prefix_suffix("babbababaabbaba", "abba"))

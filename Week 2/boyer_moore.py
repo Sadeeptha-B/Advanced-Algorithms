@@ -18,7 +18,7 @@ def boyer_moore(ref, pat):
     # Pre-processing
     bc_matrix = bad_character_matrix(pat)  # O(26m)
     z_array = z_suffix(pat)
-    gs_array, mp_array = gs_mp(z_array, pat)
+    gs_array, mp_array = gs_mp(z_array)
     res = []
 
     n = len(ref)
@@ -107,10 +107,10 @@ def good_suffix(z_array, pat):
     return gs_array
 
 
-'''Longest suffix of the good suffix "that matches the prefix of the pattern'''
+'''Longest suffix of the good suffix that matches the prefix of the pattern'''
 def matched_prefix(z_array, pat):
     m = len(pat)
-    mp_array = [m]*(m+1)
+    mp_array = [-1]*(m+1)
     ind = None
 
     for i in range(m):
@@ -125,8 +125,8 @@ def matched_prefix(z_array, pat):
 
 
 '''To compute good suffix and matched prefix both'''
-def gs_mp(z_array, pat):
-    m = len(pat)
+def gs_mp(z_array):
+    m = len(z_array)
     gs_array = [None]*(m+1)
     mp_array = [-1]*(m+1)
     m_ind = None
