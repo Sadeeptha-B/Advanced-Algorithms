@@ -1,7 +1,7 @@
 import os
 import re
-from boyer_moore import boyer_moore
-from knuth_morris_pratt import kmp
+from q2 import boyer_moore
+# from knuth_morris_pratt import kmp
 
 """
     Expected return is an list with '0' indexing and the first index of the pattern recognised
