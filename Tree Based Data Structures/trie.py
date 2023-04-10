@@ -2,10 +2,10 @@ class Trie:
     def __init__(self):
         self.root = Node()
 
-    def insert(self, st):
+    def insert(self,key, data):
         current = self.root
 
-        for char in st:
+        for char in key:
             index = ord(char) - 97 + 1
 
             if current.link[index] is None:
@@ -13,8 +13,15 @@ class Trie:
             
             current = current.link[index]
 
-        current.link[0] = Node()
-    
+        te_ind = Node.TE_IND
+
+        if current.link[te_ind] is None:
+            current.link[te_ind] = Node()
+
+        current = current.link[te_ind]
+        current.data = data
+
+
     def search(self, st):
         current = self.root
 
@@ -26,19 +33,28 @@ class Trie:
             
             current = current.link[index]
 
-        return current.link[0] is not None
+        if current.link[0] is not None:
+            return current.link[0].data
+        else:
+            return False
     
+
     '''Gives a sorted list of all strings stored in the trie'''
     def __str__(self):
-        pass
+        node = self.root
 
-
+        for i in range(len(node.link)):
+            pass
+            
 
 
 class Node:
+
+    TE_IND = 0
+
     def __init__(self, size=27):
         self.link = [None] * size
-        self.value = None
+        self.data = None
 
 
 
