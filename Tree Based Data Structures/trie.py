@@ -62,11 +62,15 @@ class Trie:
     def __str__(self):
         node = self.root
         res = []
-        self.str_aux(node, res)
-        return res
-            
+        #O(nm)
+        self.str_aux(node, res, [])
+       
+        # O(n)
+        return ', '.join(res)
 
-    def str_aux(self, node,  res, arr=[]):
+
+    def str_aux(self, node,  res, arr):
+        #O(n*m + m)
         for i in range(0, len(node.link)):
             elem = node.link[i]
 
@@ -75,14 +79,18 @@ class Trie:
 
             # Base
             if i == 0:
+                # O(m)
                 res.append(''.join(arr))
 
             else:
             # Recursion
                 value = chr(i + 97 - 1)
-                self.str_aux(elem, res, arr.append(value))
-                
+                arr.append(value)
+                self.str_aux(elem, res, arr)
 
+        if len(arr) != 0:
+            arr.pop()
+                
 
 class Node:
     terminal_index = 0
@@ -95,6 +103,9 @@ class Node:
 
 if __name__ == "__main__":
     trie = Trie()
+    trie.insert('taco')
+    trie.insert('taro')
+    print(trie)
 
 
 
