@@ -6,6 +6,8 @@ Student ID: 30769140
 import sys
 
 OUTPUT_FILE = "bwtencoded.bin"
+TERMINAL_CHAR = "$"
+ASCII_RANGE = 91    # 126 - 37 + 2 (For terminal char and inclusive end)
 
 def naive_suffix_array(text):
     arr = list(range(len(text))) #O(n)
@@ -13,17 +15,48 @@ def naive_suffix_array(text):
 
     return arr
 
-def get_bwt(text):
-    suffix_array = naive_suffix_array(text)
-    n = len(suffix_array)
-    res = []
 
-    # Loop over suffix array, get cyclic index after -1 and corresponding character
-    for elem in suffix_array:
-        ind = (elem - 1) % n
-        res.append(text[ind])
+class Encoder:
 
-    return ''.join(res)
+    def __init__(self, text):
+        self.bwt = self.__construct_bwt(text)
+        self.__generate_huffman_codes()
+
+
+    def __construct_bwt(self, text):
+        text += TERMINAL_CHAR
+        suffix_array = naive_suffix_array(text)  # Plug in efficient version here
+        n = len(suffix_array)
+        res = []
+
+        for elem in suffix_array:
+            ind = (elem - 1) % n
+            res.append(text[ind])
+
+        return ''.join(res)
+    
+
+    def __generate_huffman_codes(self):
+        freq_array = [None] * ASCII_RANGE
+
+        for char in self.bwt:
+            if char == "$":
+                freq_array[0] = 1
+                continue
+
+            ind = ord(char) - 37 + 1
+
+            if freq_array[ind] is None:
+                freq_array[ind] = 1
+            else:
+                freq_array[ind] += 1
+
+        
+           
+        
+
+    def encode(self):
+        pass
 
 
 # I/O operations
@@ -46,10 +79,6 @@ if __name__ == "__main__":
     # from the ascii range [37, 126]
     text = open_file(filename)
 
-    # Append terminal character
-    text += "$"
-
-    bwt = get_bwt(text)
-    print(bwt)
-
-
+    encoder = Encoder(text)
+    print(encoder.bwt)
+    encoder.encode()
