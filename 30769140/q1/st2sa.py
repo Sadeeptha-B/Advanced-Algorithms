@@ -10,6 +10,12 @@ class Ukkonen:
     def __init__(self) -> None:
         pass
 
+def naive_suffix_array(text):
+    arr = list(range(len(text))) #O(n)
+    arr.sort(key = lambda x: text[x::]) # O(n* nlogn * comparison)
+
+    return arr
+
 # I/O operations
 # ==================================================================================================
 
@@ -29,6 +35,7 @@ def write_output(suffix_array):
     with open(OUTPUT_FILE, 'w') as file:
         for ind in suffix_array:
             file.write(f"{ind+1}\n")
+            
 
 if __name__ == "__main__":
     _, inputfile = sys.argv
@@ -45,3 +52,4 @@ if __name__ == "__main__":
     # Create suffix array from suffix tree: Inorder traversal
 
     # Write output to file
+    write_output(naive_suffix_array(text))
