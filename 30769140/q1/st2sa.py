@@ -40,8 +40,7 @@ def write_output(suffix_array):
 if __name__ == "__main__":
     _, inputfile = sys.argv
 
-    # It is assumed that there are no line breaks in the input file
-    # All characters are within the ascii range [37, 126]
+    # It is assumed that all characters are within the ascii range [37, 126]
     text = open_file(inputfile)
 
     # Append terminal character

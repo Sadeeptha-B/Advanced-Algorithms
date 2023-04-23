@@ -51,12 +51,26 @@ class Encoder:
             else:
                 freq_array[ind] += 1
 
-        
-           
-        
-
+    '''
+    Perform run length encoding
+    '''
     def encode(self):
-        pass
+        st = self.bwt
+        ind = 0
+
+        while ind < len(st):
+            count = 1
+
+            while st[ind] == st[ind+count]:
+                count += 1
+                if count + ind >= len(st):
+                    break 
+
+            # Encode st[i]
+            # Encode count
+            print(st[ind], count)
+            ind += count 
+                    
 
 
 # I/O operations
@@ -82,3 +96,13 @@ if __name__ == "__main__":
     encoder = Encoder(text)
     print(encoder.bwt)
     encoder.encode()
+
+
+    # Strategy:
+    # Generate huffman codes
+    # Function to generate elias code
+    # Research packing into binary
+    # encode header
+    # run length encode (simple loop)
+
+    
