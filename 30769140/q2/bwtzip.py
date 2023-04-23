@@ -4,6 +4,7 @@ Student ID: 30769140
 '''
 
 import sys
+import heapq
 
 OUTPUT_FILE = "bwtencoded.bin"
 TERMINAL_CHAR = "$"
@@ -19,42 +20,77 @@ def naive_suffix_array(text):
 class Encoder:
 
     def __init__(self, text):
-        self.bwt = self.__construct_bwt(text)
+        self.__construct_bwt(text)
         self.__generate_huffman_codes()
 
 
     def __construct_bwt(self, text):
+        # Preprocess text
         text += TERMINAL_CHAR
+
+        # Construct suffix array
         suffix_array = naive_suffix_array(text)  # Plug in efficient version here
         n = len(suffix_array)
         res = []
 
-        for elem in suffix_array:
-            ind = (elem - 1) % n
-            res.append(text[ind])
+        freq_array = [None] * ASCII_RANGE
 
-        return ''.join(res)
+        # Loop over suffix array
+        for elem in suffix_array:
+
+            # Construct bwt
+            ind = (elem - 1) % n
+            char = text[ind]
+            res.append(char)
+
+            freq_ind = ord(char) - 37 + 1
+            elem = freq_array[freq_ind]
+
+            # Keep track of frequency
+            if elem is None:
+                freq_array[freq_ind] = (1, [])
+            else:
+                count = elem[0]
+                freq_array[freq_ind] = (count + 1, [])
+
+        self.bwt = ''.join(res)
+        self.freq_array = freq_array  
     
 
     def __generate_huffman_codes(self):
-        freq_array = [None] * ASCII_RANGE
+        heap = []
 
-        for char in self.bwt:
-            if char == "$":
-                freq_array[0] = 1
+        # loop through frequency array
+        for ind, elem in enumerate(self.freq_array):
+            if elem is None:
                 continue
 
-            ind = ord(char) - 37 + 1
+            freq = elem[0]
+            ascii_val = ind + 37 - 1
+            
+            heapq.heappush(heap, (freq, [ascii_val]))
 
-            if freq_array[ind] is None:
-                freq_array[ind] = 1
-            else:
-                freq_array[ind] += 1
+        print(heap)
+
+
+
+
+    def __generate_elias_code(self, num):
+        pass
+
+
+    def __encode_header(self):
+        # Length of bwt
+        # No of distinct bwt characters
+        # 7 bit ascii, length of huffman, huffman code
+        pass
 
     '''
     Perform run length encoding
     '''
     def encode(self):
+        self.__encode_header()
+
         st = self.bwt
         ind = 0
 
@@ -94,8 +130,9 @@ if __name__ == "__main__":
     text = open_file(filename)
 
     encoder = Encoder(text)
-    print(encoder.bwt)
-    encoder.encode()
+    # print(encoder.bwt)
+    # print(encoder.freq_array)
+    # encoder.encode()
 
 
     # Strategy:
