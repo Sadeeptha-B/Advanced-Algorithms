@@ -20,11 +20,14 @@ def naive_suffix_array(text):
 class Encoder:
 
     def __init__(self, text):
-        self.__construct_bwt(text)
-        self.__generate_huffman_codes()
+        self.bwt, self.range_array = self.__construct_bwt_freq(text)
+        self.bwt_unique_count = self.__generate_huffman_codes()
 
-
-    def __construct_bwt(self, text):
+    '''
+    Constructs the Burrows-Wheeler transform for the provided text and creates 
+    a list with the frequencies for each character
+    '''
+    def __construct_bwt_freq(self, text):
         # Preprocess text
         text += TERMINAL_CHAR
 
@@ -53,36 +56,86 @@ class Encoder:
                 count = elem[0]
                 freq_array[freq_ind] = (count + 1, [])
 
-        self.bwt = ''.join(res)
-        self.freq_array = freq_array  
-    
+        bwt = ''.join(res)
+        return bwt, freq_array
 
+
+    '''
+    Run after BWT construction. Creates a min heap and serves elements from it to
+    create the huffman encoding for each unique character, which is recorded in 
+    self.range_array
+    Returns the number of unique character in the BWT
+    '''
     def __generate_huffman_codes(self):
         heap = []
+        unique_count = 0
 
-        # loop through frequency array
-        for ind, elem in enumerate(self.freq_array):
+        # Put elems in freq_array into a minheap as well as make note of number of 
+        # unique elements
+        for ind, elem in enumerate(self.range_array):
             if elem is None:
                 continue
 
-            freq = elem[0]
-            ascii_val = ind + 37 - 1
+            freq = elem[0]      
+            unique_count += 1     
+            heapq.heappush(heap, (freq, [ind]))
+
+        # Pop elems in heap twice at a time to form huffman codes
+        while len(heap) >= 2:
+            first = heapq.heappop(heap)
+            second = heapq.heappop(heap)
             
-            heapq.heappush(heap, (freq, [ascii_val]))
+            # Get frequencies and corresponding indices
+            first_freq, second_freq = first[0], second[0]
+            first_idx, second_idx = first[1], second[1]
 
-        print(heap)
+            # Keep record of digit
+            self.__append_huffman_digit(first_idx, 0)
+            self.__append_huffman_digit(second_idx, 1)
 
+            # Add cumulative freq to the heap
+            heapq.heappush(heap, (first_freq + second_freq, first_idx + second_idx))
 
+        return unique_count
+    
+
+    def __append_huffman_digit(self, idx_arr, digit):
+        for idx in idx_arr:
+            huffman_arr = self.range_array[idx][1]
+            huffman_arr.append(digit)
 
 
     def __generate_elias_code(self, num):
-        pass
 
+        # Number is the code component
+        code_cmp = num
+        n = code_cmp.bit_length()
+
+        # Result array with encoded components
+        res = [f"{code_cmp:b}"]
+        
+
+        while n > 1:
+            len_cmp = n -1
+
+            # Bit length of length component
+            n = len_cmp.bit_length()
+
+            # Current length component
+            len_cmp = len_cmp - 2**(n-1)
+
+            res.append(f"{len_cmp:0{n}b}")
+
+        # Complexity of reversed is O(1), join O(n)
+        return ''.join(reversed(res))
+    
 
     def __encode_header(self):
         # Length of bwt
         # No of distinct bwt characters
         # 7 bit ascii, length of huffman, huffman code
+        bwt_length = self.__generate_elias_code(len(self.bwt))
+
         pass
 
     '''
@@ -130,6 +183,7 @@ if __name__ == "__main__":
     text = open_file(filename)
 
     encoder = Encoder(text)
+    # encoder.generate_elias_code(561)
     # print(encoder.bwt)
     # print(encoder.freq_array)
     # encoder.encode()
