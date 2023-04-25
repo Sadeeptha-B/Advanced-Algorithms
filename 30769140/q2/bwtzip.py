@@ -114,7 +114,6 @@ class Encoder:
 
         # Result array with encoded components
         res = [f"{code_cmp:b}"]
-        
 
         while n > 1:
             len_cmp = n -1
@@ -133,20 +132,29 @@ class Encoder:
 
     def __encode_header(self):
         # Length of bwt
-        # No of distinct bwt characters
-        # 7 bit ascii, length of huffman, huffman code
-
-        # while len(bitstr) >= 8:
         bwt_length = self.__generate_elias_code(len(self.bwt))
-        writer.parse_elias(bwt_length)
-        writer.close_file()
+
+        # No of distinct bwt characters
         bwt_unique = self.__generate_elias_code(self.bwt_unique_count)
 
-        
+        header_elias = [bwt_length, bwt_unique]
 
+        for elem in header_elias:
+            writer.parse_elias(elem)
 
-        pass
+        # Huffman header:
+        # 7 bit ascii, length of huffman codeword, huffman codeword
 
+        for ind, elem in enumerate(self.range_array):
+            if elem is None:
+                continue
+
+            ascii_code = ind + 37 - 1
+            huffman = elem[1]
+            huffman_len = len(huffman)
+            print(ascii_code, huffman_len, huffman)
+            
+            
     '''
     Perform run length encoding
     '''
@@ -171,7 +179,11 @@ class Encoder:
             print(st[ind], count)
             ind += count 
 
-        writer.close()
+        writer.close_file()
+
+
+# Writing encoded output 
+# ================================================================================
 
 '''
 FileWriter class to handle packing bits to bytes and writing to a provided file
@@ -191,9 +203,8 @@ class FileWriter:
         self.__file = None
 
 
-    '''
-    Allow to change filename if no file is open
-    '''
+    
+    # Allow to change filename if no file is open
     def set_file(self, filename):
         if self.__file is not None:
             raise IOError('Close currently opened file')
@@ -203,10 +214,8 @@ class FileWriter:
 
         self.__filename = filename
 
-
-    '''
-    Must be run before running file operations
-    '''
+    
+    # Must be run before running file operations
     def open_file(self, filename=None):
         if self.__file is not None:
             raise IOError('Close currently opened file')
@@ -216,10 +225,9 @@ class FileWriter:
 
         self.__file = open(self.__filename, 'wb')
 
-    '''
-    Must be called at the end of writing operation. Flushes contents of buffer if any
-    before closing file
-    '''
+    
+    #Must be called at the end of writing operation. Flushes contents of buffer if any
+    # before closing file
     def close_file(self):
         self.__flush()
         if self.__file is not None:
@@ -227,9 +235,8 @@ class FileWriter:
 
         self.__file = None
 
-    '''
-    Given an elias code string, will write bit by bit to the file
-    '''
+
+    # Given an elias code string, will write bit by bit to the file
     def parse_elias(self, st):
         if self.__file is None:
             raise IOError('File must be open')
@@ -237,9 +244,8 @@ class FileWriter:
         for elem in st:
             self.__add(elem)
 
-    '''
-    Logic to maintain buffer and write bits to file once full
-    '''
+    
+    # Logic to maintain buffer and write bits to file once full
     def __add(self, bit):
         buffer = self.__buffer
 
@@ -259,10 +265,8 @@ class FileWriter:
         pass
         
 
-    '''
-    Writes to the file, one byte at a time. If the buffer is not full when called,
-    will pad remainder with zero bits.
-    '''
+    # Writes to the file, one byte at a time. If the buffer is not full when called,
+    # will pad remainder with zero bits.
     def __flush(self):
         if self.__file is None:
             raise IOError('File must be open')
@@ -271,31 +275,29 @@ class FileWriter:
         if self.__ptr == 0:
             return
         
-        buffer = self.__buffer
+        # pad zeros if buffer not full when called
+        while self.__ptr < FileWriter.BUFFER_SIZE:
+            self.__buffer[self.__ptr] = '0'
+            self.__ptr += 1
 
-        # Inexpensive slicing operation if buffer is not full before flush
-        if self.__ptr < FileWriter.BUFFER_SIZE:
-            buffer = self.__buffer[:self.__ptr]
-
-        bitstring = "".join(buffer)
+        bitstring = "".join(self.__buffer)
         num = int(bitstring, 2)
         byte = num.to_bytes(1, "big")
+
+        print(byte)
         self.__file.write(byte)
         self.__ptr = 0
 
 
-    '''
-    Cleans resources
-    '''
+    
+    # Cleans resources
     def __del__(self):
         if self.__file is not None:
             self.close_file()
         
 
-    
 
-
-# I/O operations
+# Reading input
 # ==============================================================
 
 def open_file(filename):
