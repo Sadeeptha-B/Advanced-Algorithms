@@ -91,8 +91,8 @@ class Encoder:
             first_idx, second_idx = first[1], second[1]
 
             # Keep record of digit
-            self.__append_huffman_digit(first_idx, 0)
-            self.__append_huffman_digit(second_idx, 1)
+            self.__append_huffman_digit(first_idx, '0')
+            self.__append_huffman_digit(second_idx, '1')
 
             # Add cumulative freq to the heap
             heapq.heappush(heap, (first_freq + second_freq, first_idx + second_idx))
@@ -107,7 +107,9 @@ class Encoder:
 
 
     def __generate_elias_code(self, num):
-
+        if not isinstance(num, int):
+            raise ValueError('num must be an integer')
+    
         # Number is the code component
         code_cmp = num
         n = code_cmp.bit_length()
@@ -140,7 +142,7 @@ class Encoder:
         header_elias = [bwt_length, bwt_unique]
 
         for elem in header_elias:
-            writer.parse_elias(elem)
+            writer.parse_bitstr(elem)
 
         # Huffman header:
         # 7 bit ascii, length of huffman codeword, huffman codeword
@@ -149,12 +151,18 @@ class Encoder:
             if elem is None:
                 continue
 
+            # 7 bit ascii
             ascii_code = ind + 37 - 1
-            huffman = elem[1]
-            huffman_len = len(huffman)
-            print(ascii_code, huffman_len, huffman)
-            
-            
+            writer.parse_bitstr(f"{ascii_code:07b}")
+
+            # Len of huffman code in elias
+            huffman_len = self.__generate_elias_code(len(elem[1]))
+            writer.parse_bitstr(huffman_len)
+
+            # huffman codeword
+            writer.parse_huffman(elem[1])    
+            print(ascii_code, huffman_len, elem[1])  
+
     '''
     Perform run length encoding
     '''
@@ -174,9 +182,13 @@ class Encoder:
                 if count + ind >= len(st):
                     break 
 
-            # Encode st[i]
-            # Encode count
-            print(st[ind], count)
+            # Write huffman codeword
+            freq_ind = ord(st[ind]) - 37 + 1
+            writer.parse_huffman(self.range_array[freq_ind][1])
+
+            # Encode count in elias
+            writer.parse_bitstr(self.__generate_elias_code(count))
+
             ind += count 
 
         writer.close_file()
@@ -192,6 +204,7 @@ class FileWriter:
     BUFFER_SIZE = 8
 
     def __init__(self, filename):
+        # Buffer is filled with either 0 or 1 single char strings
         self.__buffer = [None] * FileWriter.BUFFER_SIZE
         self.__ptr = 0
 
@@ -201,7 +214,6 @@ class FileWriter:
         # File writing attributes
         self.__filename = filename 
         self.__file = None
-
 
     
     # Allow to change filename if no file is open
@@ -237,16 +249,23 @@ class FileWriter:
 
 
     # Given an elias code string, will write bit by bit to the file
-    def parse_elias(self, st):
+    def parse_bitstr(self, st):
         if self.__file is None:
             raise IOError('File must be open')
 
         for elem in st:
-            self.__add(elem)
+            self.add(elem)
+
+    #TODO
+    def parse_int(self, num):
+        while num.bit_length() > 0:
+            lsb = num % 2
+            num = num >> 1
+            self.add(str(lsb))
 
     
     # Logic to maintain buffer and write bits to file once full
-    def __add(self, bit):
+    def add(self, bit):
         buffer = self.__buffer
 
         if self.__ptr >= FileWriter.BUFFER_SIZE:
@@ -258,12 +277,13 @@ class FileWriter:
             self.__flush()
 
 
-    def parse_huffman(self):
+    def parse_huffman(self, huffman_lst):
         if self.__file is None:
             raise IOError('File must be open')
 
-        pass
-        
+        for i in range(len(huffman_lst)-1, -1, -1):
+            self.add(huffman_lst[i])
+            
 
     # Writes to the file, one byte at a time. If the buffer is not full when called,
     # will pad remainder with zero bits.
@@ -281,14 +301,14 @@ class FileWriter:
             self.__ptr += 1
 
         bitstring = "".join(self.__buffer)
+
         num = int(bitstring, 2)
         byte = num.to_bytes(1, "big")
 
-        print(byte)
+        # print(byte)
         self.__file.write(byte)
         self.__ptr = 0
-
-
+    
     
     # Cleans resources
     def __del__(self):
@@ -319,9 +339,6 @@ if __name__ == "__main__":
 
     writer = FileWriter(OUTPUT_FILE)
     encoder = Encoder(text, writer)
-    # encoder.generate_elias_code(561)
-    # print(encoder.bwt)
-    # print(encoder.freq_array)
     encoder.encode()
 
 
