@@ -19,9 +19,10 @@ def naive_suffix_array(text):
 
 class Encoder:
 
-    def __init__(self, text):
+    def __init__(self, text, writer):
         self.bwt, self.range_array = self.__construct_bwt_freq(text)
         self.bwt_unique_count = self.__generate_huffman_codes()
+        self.writer = writer
 
     '''
     Constructs the Burrows-Wheeler transform for the provided text and creates 
@@ -134,7 +135,14 @@ class Encoder:
         # Length of bwt
         # No of distinct bwt characters
         # 7 bit ascii, length of huffman, huffman code
+
+        # while len(bitstr) >= 8:
         bwt_length = self.__generate_elias_code(len(self.bwt))
+        writer.parse_elias(bwt_length)
+        bwt_unique = self.__generate_elias_code(self.bwt_unique_count)
+
+        
+
 
         pass
 
@@ -142,6 +150,8 @@ class Encoder:
     Perform run length encoding
     '''
     def encode(self):
+        writer.open_file()
+
         self.__encode_header()
 
         st = self.bwt
@@ -159,7 +169,97 @@ class Encoder:
             # Encode count
             print(st[ind], count)
             ind += count 
-                    
+
+
+'''
+FileWriter class to handle packing bits to bytes and writing to a provided file
+'''
+class FileWriter:
+    BUFFER_SIZE = 8
+
+    def __init__(self, filename):
+        self.__buffer = [None] * FileWriter.BUFFER_SIZE
+        self.__ptr = 0
+
+        if filename is None:
+            raise TypeError('Filename cannot be None')
+
+        # File writing attributes
+        self.__filename = filename 
+        self.__file = None
+
+    '''
+    Allow to change filename if no file is open
+    '''
+    def set_file(self, filename):
+        if self.__file is not None:
+            raise IOError('Close currently opened file')
+        
+        if filename is None:
+            raise TypeError('Filename cannot be None')
+
+        self.__filename = filename
+
+    '''
+    Must be run before running file operations
+    '''
+    def open_file(self):
+        if self.__file is not None:
+            raise IOError('Close currently opened file')
+            
+        self.__file = open(self.__filename, 'wb')
+
+
+    def close_file(self):
+        if self.__file is not None:
+            self.__file.close()
+
+        self.__file = None
+
+
+    def parse_elias(self, st):
+        if self.__file is None:
+            raise IOError('File must be open')
+
+        for elem in st:
+            self.__add(elem)
+
+    def __add(self, bit):
+        buffer = self.__buffer
+
+        if self.__ptr >= FileWriter.BUFFER_SIZE:
+            raise RuntimeError('Illegal state, buffer index should be within limits')
+
+        buffer[self.__ptr] = bit
+
+        self.__ptr += 1
+        if self.__ptr == FileWriter.BUFFER_SIZE:
+            self.__flush()
+
+    def parse_huffman(self):
+        if self.__file is None:
+            raise IOError('File must be open')
+
+        pass
+        
+
+    def __flush(self):
+        if self.__file is None:
+            raise IOError('File must be open')
+        
+        
+        bitstring = "".join(self.__buffer)
+        num = int(bitstring, 2)
+        byte = num.to_bytes(1, "big")
+        self.__file.write(byte)
+
+
+    def __del__(self):
+        if self.__file is not None:
+            self.close_file()
+        
+
+    
 
 
 # I/O operations
@@ -182,11 +282,12 @@ if __name__ == "__main__":
     # from the ascii range [37, 126]
     text = open_file(filename)
 
-    encoder = Encoder(text)
+    writer = FileWriter(OUTPUT_FILE)
+    encoder = Encoder(text, writer)
     # encoder.generate_elias_code(561)
     # print(encoder.bwt)
     # print(encoder.freq_array)
-    # encoder.encode()
+    encoder.encode()
 
 
     # Strategy:
