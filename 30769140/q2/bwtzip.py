@@ -9,6 +9,7 @@ import heapq
 OUTPUT_FILE = "bwtencoded.bin"
 TERMINAL_CHAR = "$"
 ASCII_RANGE = 91    # 126 - 37 + 2 (For terminal char and inclusive end)
+ASCII_START = 36
 
 def naive_suffix_array(text):
     arr = list(range(len(text))) #O(n)
@@ -47,7 +48,7 @@ class Encoder:
             char = text[ind]
             res.append(char)
 
-            freq_ind = ord(char) - 37 + 1
+            freq_ind = ord(char) - ASCII_START
             elem = freq_array[freq_ind]
 
             # Keep track of frequency
@@ -55,7 +56,7 @@ class Encoder:
                 freq_array[freq_ind] = (1, [])
             else:
                 count = elem[0]
-                freq_array[freq_ind] = (count + 1, [])
+                freq_array[freq_ind] = (count + 1, elem[1])
 
         bwt = ''.join(res)
         return bwt, freq_array
@@ -64,7 +65,11 @@ class Encoder:
     '''
     Run after BWT construction. Creates a min heap and serves elements from it to
     create the huffman encoding for each unique character, which is recorded in 
-    self.range_array
+    self.range_array.
+
+    The huffman encoding is stored in the form ['1', '1', '0'] corresponding to a huffman code
+    of 011. So, the stored code must be reversed during processing
+
     Returns the number of unique character in the BWT
     '''
     def __generate_huffman_codes(self):
@@ -99,13 +104,23 @@ class Encoder:
 
         return unique_count
     
-
+    '''
+    Given a list of indices corresponding to ascii characters, appends relevant digit to keep 
+    record of huffman encoding
+    '''
     def __append_huffman_digit(self, idx_arr, digit):
         for idx in idx_arr:
             huffman_arr = self.range_array[idx][1]
             huffman_arr.append(digit)
 
 
+    '''
+    Generates the elias code for a provided integer.
+    Returns a list of the form 
+    [code_cmp, len_cmp1, len_cmp2....]
+    The list needs to be reversed during processing.
+    Each len_cmp is of the form (no of zero bits in front, len_component)
+    '''
     def __generate_elias_code(self, num):
         if not isinstance(num, int):
             raise ValueError('num must be an integer')
@@ -115,7 +130,7 @@ class Encoder:
         n = code_cmp.bit_length()
 
         # Result array with encoded components
-        res = [f"{code_cmp:b}"]
+        res = [num]
 
         while n > 1:
             len_cmp = n -1
@@ -126,12 +141,17 @@ class Encoder:
             # Current length component
             len_cmp = len_cmp - 2**(n-1)
 
-            res.append(f"{len_cmp:0{n}b}")
+            res.append((n - len_cmp.bit_length(), len_cmp))
 
-        # Complexity of reversed is O(1), join O(n)
-        return ''.join(reversed(res))
+        return res
     
-
+    '''
+    Encodes a header of the specification
+    1. Length of bwt
+    2. No of unique characters in bwt
+    3. For each huffman character: 7 bit ascii representation, length of huffman code, huffman code word
+    
+    '''
     def __encode_header(self):
         # Length of bwt
         bwt_length = self.__generate_elias_code(len(self.bwt))
@@ -142,26 +162,23 @@ class Encoder:
         header_elias = [bwt_length, bwt_unique]
 
         for elem in header_elias:
-            writer.parse_bitstr(elem)
+            writer.parse_elias(elem)
 
-        # Huffman header:
-        # 7 bit ascii, length of huffman codeword, huffman codeword
-
+        # Huffman header
         for ind, elem in enumerate(self.range_array):
             if elem is None:
                 continue
 
             # 7 bit ascii
             ascii_code = ind + 37 - 1
-            writer.parse_bitstr(f"{ascii_code:07b}")
+            writer.parse_int(ascii_code, 7)
 
             # Len of huffman code in elias
             huffman_len = self.__generate_elias_code(len(elem[1]))
-            writer.parse_bitstr(huffman_len)
+            writer.parse_elias(huffman_len)
 
             # huffman codeword
             writer.parse_huffman(elem[1])    
-            print(ascii_code, huffman_len, elem[1])  
 
     '''
     Perform run length encoding
@@ -187,7 +204,7 @@ class Encoder:
             writer.parse_huffman(self.range_array[freq_ind][1])
 
             # Encode count in elias
-            writer.parse_bitstr(self.__generate_elias_code(count))
+            writer.parse_elias(self.__generate_elias_code(count))
 
             ind += count 
 
@@ -238,7 +255,7 @@ class FileWriter:
         self.__file = open(self.__filename, 'wb')
 
     
-    #Must be called at the end of writing operation. Flushes contents of buffer if any
+    # Must be called at the end of writing operation. Flushes contents of buffer if any
     # before closing file
     def close_file(self):
         self.__flush()
@@ -248,7 +265,7 @@ class FileWriter:
         self.__file = None
 
 
-    # Given an elias code string, will write bit by bit to the file
+    # Given an bitstring, will write bit by bit to the file
     def parse_bitstr(self, st):
         if self.__file is None:
             raise IOError('File must be open')
@@ -256,12 +273,43 @@ class FileWriter:
         for elem in st:
             self.add(elem)
 
-    #TODO
-    def parse_int(self, num):
-        while num.bit_length() > 0:
-            lsb = num % 2
-            num = num >> 1
-            self.add(str(lsb))
+
+    # Given a integer, will write it to in binary form to the file. If the total bits is specified, will pad bits in front
+    def parse_int(self, num, total_bits=None):
+        if not isinstance(num, int):
+            raise ValueError('Num must be an int')
+
+        bits  = num.bit_length()
+
+        if total_bits is not None and total_bits > bits:
+            diff = total_bits - bits
+            for _ in range(diff):
+                self.add('0')
+
+        while bits > 0:
+            start = num >> (bits - 1)
+            msb = start % 2
+            bits -= 1
+            self.add(str(msb))
+
+    # Takes an elias list as formatted in generate_elias_code in Encoder.
+    #
+    def parse_elias(self, elias_lst):
+        if self.__file is None:
+            raise IOError('File must be open')
+        
+        for i in range(len(elias_lst)-1, -1, -1):
+            elem = elias_lst[i]
+
+            if isinstance(elem, tuple):
+                zeros = elem[0]
+                for _ in range(zeros):
+                    self.add('0')
+                cmp = elem[1]
+            else:
+                cmp = elem
+
+            self.parse_int(cmp)
 
     
     # Logic to maintain buffer and write bits to file once full
@@ -277,6 +325,8 @@ class FileWriter:
             self.__flush()
 
 
+    # Given a huffman list of the form [last digit, ...first digit]
+    # will write bits in reverse order
     def parse_huffman(self, huffman_lst):
         if self.__file is None:
             raise IOError('File must be open')
@@ -301,11 +351,11 @@ class FileWriter:
             self.__ptr += 1
 
         bitstring = "".join(self.__buffer)
+        print(bitstring)
 
         num = int(bitstring, 2)
         byte = num.to_bytes(1, "big")
 
-        # print(byte)
         self.__file.write(byte)
         self.__ptr = 0
     
@@ -320,7 +370,7 @@ class FileWriter:
 # Reading input
 # ==============================================================
 
-def open_file(filename):
+def read_file(filename):
     st = ""
 
     with open(filename, 'r') as file:
@@ -330,23 +380,16 @@ def open_file(filename):
     return st
 
 
+# Runner
 if __name__ == "__main__":
     _, filename = sys.argv
 
     # It is assumed that the file only contains characters
     # from the ascii range [37, 126]
-    text = open_file(filename)
+    text = read_file(filename)
 
     writer = FileWriter(OUTPUT_FILE)
     encoder = Encoder(text, writer)
     encoder.encode()
-
-
-    # Strategy:
-    # Generate huffman codes
-    # Function to generate elias code
-    # Research packing into binary
-    # encode header
-    # run length encode (simple loop)
 
     
