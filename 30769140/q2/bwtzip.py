@@ -139,6 +139,7 @@ class Encoder:
         # while len(bitstr) >= 8:
         bwt_length = self.__generate_elias_code(len(self.bwt))
         writer.parse_elias(bwt_length)
+        writer.close_file()
         bwt_unique = self.__generate_elias_code(self.bwt_unique_count)
 
         
@@ -170,6 +171,7 @@ class Encoder:
             print(st[ind], count)
             ind += count 
 
+        writer.close()
 
 '''
 FileWriter class to handle packing bits to bytes and writing to a provided file
@@ -188,6 +190,7 @@ class FileWriter:
         self.__filename = filename 
         self.__file = None
 
+
     '''
     Allow to change filename if no file is open
     '''
@@ -200,23 +203,33 @@ class FileWriter:
 
         self.__filename = filename
 
+
     '''
     Must be run before running file operations
     '''
-    def open_file(self):
+    def open_file(self, filename=None):
         if self.__file is not None:
             raise IOError('Close currently opened file')
-            
+        
+        if filename is not None:
+            self.set_file(filename)
+
         self.__file = open(self.__filename, 'wb')
 
-
+    '''
+    Must be called at the end of writing operation. Flushes contents of buffer if any
+    before closing file
+    '''
     def close_file(self):
+        self.__flush()
         if self.__file is not None:
             self.__file.close()
 
         self.__file = None
 
-
+    '''
+    Given an elias code string, will write bit by bit to the file
+    '''
     def parse_elias(self, st):
         if self.__file is None:
             raise IOError('File must be open')
@@ -224,6 +237,9 @@ class FileWriter:
         for elem in st:
             self.__add(elem)
 
+    '''
+    Logic to maintain buffer and write bits to file once full
+    '''
     def __add(self, bit):
         buffer = self.__buffer
 
@@ -231,10 +247,10 @@ class FileWriter:
             raise RuntimeError('Illegal state, buffer index should be within limits')
 
         buffer[self.__ptr] = bit
-
         self.__ptr += 1
-        if self.__ptr == FileWriter.BUFFER_SIZE:
+        if self.__ptr >= FileWriter.BUFFER_SIZE:
             self.__flush()
+
 
     def parse_huffman(self):
         if self.__file is None:
@@ -243,17 +259,34 @@ class FileWriter:
         pass
         
 
+    '''
+    Writes to the file, one byte at a time. If the buffer is not full when called,
+    will pad remainder with zero bits.
+    '''
     def __flush(self):
         if self.__file is None:
             raise IOError('File must be open')
         
+        # Nothing to flush if buffer is empty
+        if self.__ptr == 0:
+            return
         
-        bitstring = "".join(self.__buffer)
+        buffer = self.__buffer
+
+        # Inexpensive slicing operation if buffer is not full before flush
+        if self.__ptr < FileWriter.BUFFER_SIZE:
+            buffer = self.__buffer[:self.__ptr]
+
+        bitstring = "".join(buffer)
         num = int(bitstring, 2)
         byte = num.to_bytes(1, "big")
         self.__file.write(byte)
+        self.__ptr = 0
 
 
+    '''
+    Cleans resources
+    '''
     def __del__(self):
         if self.__file is not None:
             self.close_file()
