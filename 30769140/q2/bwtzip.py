@@ -10,6 +10,7 @@ OUTPUT_FILE = "bwtencoded.bin"
 TERMINAL_CHAR = "$"
 ASCII_RANGE = 91    # 126 - 37 + 2 (For terminal char and inclusive end)
 ASCII_START = 36
+ASCII_HEADER_SIZE = 7
 
 def naive_suffix_array(text):
     arr = list(range(len(text))) #O(n)
@@ -170,8 +171,8 @@ class Encoder:
                 continue
 
             # 7 bit ascii
-            ascii_code = ind + 37 - 1
-            writer.parse_int(ascii_code, 7)
+            ascii_code = ind + ASCII_START
+            writer.parse_int(ascii_code, ASCII_HEADER_SIZE)
 
             # Len of huffman code in elias
             huffman_len = self.__generate_elias_code(len(elem[1]))
@@ -200,7 +201,7 @@ class Encoder:
                     break 
 
             # Write huffman codeword
-            freq_ind = ord(st[ind]) - 37 + 1
+            freq_ind = ord(st[ind]) - ASCII_START
             writer.parse_huffman(self.range_array[freq_ind][1])
 
             # Encode count in elias
@@ -293,7 +294,6 @@ class FileWriter:
             self.add(str(msb))
 
     # Takes an elias list as formatted in generate_elias_code in Encoder.
-    #
     def parse_elias(self, elias_lst):
         if self.__file is None:
             raise IOError('File must be open')
