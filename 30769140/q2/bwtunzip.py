@@ -3,6 +3,7 @@ import warnings
 
 OUTPUT_FILE = 'recovered.txt'
 BYTE_SIZE = 8 # 1 byte is 8 bits
+ASCII_HEADER_SIZE = 7
 
 class Decoder:
     def __init__(self, reader):
@@ -13,64 +14,59 @@ class Decoder:
     def decode(self):
         reader.open_file()
         self.process_header()
-            # self.decode_data()
+        
+        # Decode data by traversing huffman tree
+
 
         reader.close_file()
 
 
     def process_header(self):
-        try:
-            self.bwt_length = self.decode_elias()
-        except IOError:
-            warnings.warn("File ended before parsing header")
-            
-
-        
+        self.bwt_length = self.decode_elias()
+        self.unique_bwt = self.decode_elias()
 
 
-
-            
-
-        # self.__bitarray = reader.read_bitarray()
-        # header_incomplete = True
-
-        # while self.__bitarray and header_incomplete:
-        #     # Get bwt length
-        #     self.bwt_length = self.decode_elias(0)
-        #     self.unique_bwt = self.decode_elias(0)
+        # Decode bwt characters and ascii encodings
+        for _ in range(self.unique_bwt):
+            ascii_code = self.decode_ascii()
+            huffman_len = self.decode_elias()
+            huffman_str = reader.read_bitstr(huffman_len)
 
 
+            print(ascii_code, huffman_len, huffman_str)
 
-        # return not header_incomplete
 
+    def construct_huffman_tree(self):
+        pass
+
+
+    # Go through constructed huffman tree and get relevant ascii character
+    def decode_huffman(self):
+        pass
 
     def decode_elias(self):
-        num = 1
+        num = 0
 
         while True:
-            bit_len = num + 1
-            bits = reader.read_bits(bit_len)
+            bit_count = num + 1
+            bitstr = reader.read_bitstr(bit_count)
 
-            if len(bits) != bit_len:
+            if len(bitstr) != bit_count:
                 raise IOError('No more bits to read')
             
-            
+            mask = 1 << (bit_count - 1)
+            num = int(bitstr, 2) | mask
 
-
-            
-
-
-            
-            
-
-        
-        
+            if  bitstr[0] == "1":
+                break
 
         return num
+        
 
-
-    def decode_data(self):
-        pass             
+    def decode_ascii(self):
+        ascii_bits = reader.read_bitstr(ASCII_HEADER_SIZE)
+        return int(ascii_bits, 2)
+       
             
 
 
@@ -171,11 +167,15 @@ class BinaryReader:
         for _ in range(count):
             bit = self.read_bit()
             if bit is not None:
-                bits.append(bit)
+                bits.append(str(bit))
+
         return bits
-
-
     
+    def read_bitstr(self, count):
+        bits = self.read_bits(count)
+        return ''.join(bits)
+    
+
     def get_bitarray(self):
         return list(self.__bitarray)
 
