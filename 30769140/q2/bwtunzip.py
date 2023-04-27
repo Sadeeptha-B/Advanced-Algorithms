@@ -3,6 +3,9 @@ import sys
 OUTPUT_FILE = 'recovered.txt'
 BYTE_SIZE = 8 # 1 byte is 8 bits
 ASCII_HEADER_SIZE = 7
+ASCII_RANGE = 91
+ASCII_START = 36
+TERMINAL_CHAR = "$"
 
 '''
 For use in Binary tree
@@ -151,6 +154,61 @@ class Decoder:
             raise IOError('No more bits to read')
 
         return int(ascii_bits, 2)
+    
+
+    def invert_bwt(self, bwt):
+        n = len(bwt) - 1
+        res = [None] * n 
+
+        rank, occ = self.__compute_rank_occ(bwt) # O(n)
+
+        i = n - 1
+        next_i = 0
+        char = bwt[next_i]
+
+        '''
+        Constructs the results array one by one by going back through the string
+        '''
+        while char != TERMINAL_CHAR:
+            res[i] = char
+            next_i = rank[ord(char) - ASCII_START] + occ[next_i]
+            char = bwt[next_i]
+            i -= 1
+        
+        return ''.join(res)
+    
+    def __compute_rank_occ(self, bwt):
+        arr = [None]*ASCII_RANGE
+        occ = [None]* len(bwt)
+
+        # Calculate the count of each character occurence
+        for i, char in enumerate(bwt):
+            if char == TERMINAL_CHAR:
+                arr[0] = 1
+                occ[i] = 0
+                continue
+
+            ind = ord(char) - ASCII_START
+            
+            if arr[ind] is None:
+                arr[ind] = 1
+                occ[i] = 0
+            else:
+                occ[i] = arr[ind]
+                arr[ind] += 1
+        
+
+        # Maintain a running count to keep track of rank
+        run_count = 0
+        for i in range(len(arr)):
+
+            if arr[i] is not None:
+                value = arr[i]
+                arr[i] = run_count
+                run_count += value
+                
+        return arr, occ
+
        
             
 
@@ -318,9 +376,9 @@ if __name__ == "__main__":
     decoder = Decoder(reader)
     txt = decoder.decode()
 
-    print(txt)
-    # with open(OUTPUT_FILE, 'w') as file:
-    #     file.write(txt)
+    # Write to output file
+    with open(OUTPUT_FILE, 'w') as file:
+        file.write(txt)
 
 
 
