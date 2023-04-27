@@ -367,8 +367,6 @@ class BinaryReader:
         
 
 
-
-
 if __name__ == "__main__":
     _, encodedfile = sys.argv
 
@@ -379,7 +377,4 @@ if __name__ == "__main__":
     # Write to output file
     with open(OUTPUT_FILE, 'w') as file:
         file.write(txt)
-
-
-
 
