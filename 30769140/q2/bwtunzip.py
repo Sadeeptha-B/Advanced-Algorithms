@@ -22,8 +22,12 @@ class Decoder:
         self.reader = reader
         self.bwt_length = 0
         self.unique_bwt = 0
-        self.huffman_root = Node()
+        self.__huffman_root = Node()
 
+
+    '''
+    Drives the decoding algorithm
+    '''
     def decode(self):
         reader.open_file()
 
@@ -32,16 +36,35 @@ class Decoder:
         except IOError as e:
             print('Invalid file. Ran out of bits while processing header')
         else:
-            self.decode_data()
+            data = self.__decode_data()
+            txt = self.invert_bwt(data)
+        finally:
+            reader.close_file()
 
-        reader.close_file()
+        return txt
 
 
-    def decode_data(self):
-        
-        
-        pass
+    '''
+    Run after the header is read. Decodes the data fully, according to runlength
+    decoding. Throws exceptions if file ends prematurely or unknown huffman code is
+    encountered
+    '''
+    def __decode_data(self):
+        res = []
 
+        while len(res) < self.bwt_length:
+            char = self.decode_huffman()
+            char_count = self.decode_elias()
+            
+            for _ in range(char_count):
+                res.append(char)
+
+        return ''.join(res)
+
+
+    '''
+    Processes the header. Throws exceptions if file ends prematurely.
+    '''
     def process_header(self):
         self.bwt_length = self.decode_elias()
         self.unique_bwt = self.decode_elias()
@@ -56,11 +79,14 @@ class Decoder:
             if len(huffman_lst) != huffman_len:
                 raise IOError('No more bits to read')
 
-            self.construct_huffman_tree(ascii_code, huffman_lst)
+            self.__construct_huffman_tree(ascii_code, huffman_lst)
 
 
-    def construct_huffman_tree(self, ascii_code, huffman_lst):
-        node = self.huffman_root
+    '''
+    Provided the ascii code and a list of bits will add code to the tree
+    '''
+    def __construct_huffman_tree(self, ascii_code, huffman_lst):
+        node = self.__huffman_root
 
         for elem in huffman_lst:
             elem = int(elem)
@@ -73,10 +99,30 @@ class Decoder:
         node.elem_ascii = ascii_code
 
 
-    # Go through constructed huffman tree and get relevant ascii character
+    '''
+    Traverse constructed huffman tree and get relevant ascii character
+    '''
     def decode_huffman(self):
-        pass
+        node = self.__huffman_root
 
+        while node.elem_ascii is None:
+            bit = reader.read_bit()
+            if bit is None:
+                raise IOError('Ran out of bits while decoding')
+            
+            next = node.link[bit]
+
+            if next is None:
+                raise ValueError('Unknown huffman code')
+            
+            node = next
+        
+        return chr(node.elem_ascii)
+
+
+    '''
+    Reads bits from file as appropriate to decode elias code.
+    '''
     def decode_elias(self):
         num = 0
 
@@ -95,7 +141,9 @@ class Decoder:
 
         return num
         
-
+    '''
+    Reads header size ascii bits and returns relevant codepoint.
+    '''
     def decode_ascii(self):
         ascii_bits = reader.read_bitstr(ASCII_HEADER_SIZE)
 
@@ -270,6 +318,7 @@ if __name__ == "__main__":
     decoder = Decoder(reader)
     txt = decoder.decode()
 
+    print(txt)
     # with open(OUTPUT_FILE, 'w') as file:
     #     file.write(txt)
 
