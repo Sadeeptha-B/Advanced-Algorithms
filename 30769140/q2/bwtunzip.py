@@ -4,40 +4,73 @@ OUTPUT_FILE = 'recovered.txt'
 BYTE_SIZE = 8 # 1 byte is 8 bits
 ASCII_HEADER_SIZE = 7
 
+'''
+For use in Binary tree
+'''        
+class Node:
+    def __init__(self):
+        self.elem_ascii = None
+        self.link = [None, None]
+
+
+'''
+Makes use of BinaryReader to read the binary file bit by bit and decodes 
+the header and data
+'''
 class Decoder:
     def __init__(self, reader):
         self.reader = reader
         self.bwt_length = 0
         self.unique_bwt = 0
+        self.huffman_root = Node()
 
     def decode(self):
         reader.open_file()
-        self.process_header()
-        
-        # Decode data by traversing huffman tree
 
+        try:
+            self.process_header()
+        except IOError as e:
+            print('Invalid file. Ran out of bits while processing header')
+        else:
+            self.decode_data()
 
         reader.close_file()
 
+
+    def decode_data(self):
+        
+        
+        pass
 
     def process_header(self):
         self.bwt_length = self.decode_elias()
         self.unique_bwt = self.decode_elias()
 
-        print(self.bwt_length, self.unique_bwt)
 
         # Decode bwt characters and ascii encodings
         for _ in range(self.unique_bwt):
             ascii_code = self.decode_ascii()
             huffman_len = self.decode_elias()
-            huffman_str = reader.read_bitstr(huffman_len)
+            huffman_lst = reader.read_bits(huffman_len)
+
+            if len(huffman_lst) != huffman_len:
+                raise IOError('No more bits to read')
+
+            self.construct_huffman_tree(ascii_code, huffman_lst)
 
 
-            print(ascii_code, huffman_len, huffman_str)
+    def construct_huffman_tree(self, ascii_code, huffman_lst):
+        node = self.huffman_root
 
+        for elem in huffman_lst:
+            elem = int(elem)
 
-    def construct_huffman_tree(self):
-        pass
+            if node.link[elem] is None:
+                node.link[elem] = Node()
+
+            node = node.link[elem]
+
+        node.elem_ascii = ascii_code
 
 
     # Go through constructed huffman tree and get relevant ascii character
@@ -65,6 +98,10 @@ class Decoder:
 
     def decode_ascii(self):
         ascii_bits = reader.read_bitstr(ASCII_HEADER_SIZE)
+
+        if len(ascii_bits) != ASCII_HEADER_SIZE:
+            raise IOError('No more bits to read')
+
         return int(ascii_bits, 2)
        
             
@@ -74,6 +111,7 @@ BinaryReader class to handle the logic of reading bytes and unpacking bits.
 Provides read_bit, read_bitarray, read_bits, read_bitstr methods.
 '''
 class BinaryReader: 
+    CHUNK_SIZE = 1
 
     def __init__(self, filename):        
         if filename is None:
@@ -122,7 +160,7 @@ class BinaryReader:
 
     - If called while buffer is not empty, it will not read anything
     - bitarray will be set to an empty list if there are no further bytes to read
-    - To access the bit_array, use get_bitarray method
+    - Does not return anything. To access the bit_array, use get_bitarray method
     '''
     def read_bitarray(self):
         if self.__file is None:
@@ -132,7 +170,7 @@ class BinaryReader:
             return 
 
         file = self.__file
-        byte = file.read(1)
+        byte = file.read(BinaryReader.CHUNK_SIZE) # Read 1 byte
 
         zeros, num = 0, 0
 
@@ -188,8 +226,7 @@ class BinaryReader:
         return bit
     
     '''
-    Will read and return a list of specified
-    amount of bits
+    Will read and return a list of specified amount of bits
     '''
     def read_bits(self, count):
         bits = []
@@ -200,23 +237,30 @@ class BinaryReader:
 
         return bits
     
-    
+    '''
+    Return a string of upcoming bits of the specified length
+    '''
     def read_bitstr(self, count):
         bits = self.read_bits(count)
         return ''.join(bits)
     
 
+    '''
+    Provide the bitarray if required
+    '''
     def get_bitarray(self):
         if self.__bitarray is None:
             return []
         return list(self.__bitarray)
 
 
+    # Cleans up resources 
     def __del__(self):
         if self.__file is not None:
             self.close_file()
-
         
+
+
 
 
 if __name__ == "__main__":
