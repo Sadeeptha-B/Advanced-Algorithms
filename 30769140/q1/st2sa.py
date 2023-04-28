@@ -16,6 +16,13 @@ def naive_suffix_array(text):
 
     return arr
 
+
+def ukkonen_naive_loop(st):
+    for i in range(len(st)):
+        for j in range(len(i)):
+            pass
+
+
 # I/O operations
 # ==================================================================================================
 
