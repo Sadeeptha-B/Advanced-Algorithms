@@ -33,13 +33,15 @@ def ukkonen_naive_loop(st):
                     edge = edge.next
                     substr_len = i - edge.end
 
-              # Case 1: Can remove this if we just used a global end
-            edge.end += 1  
-            j+= 1
+            start = edge.start
 
-            # Case 2 or 3
+            while start > end:
+            
+        
 
 
+
+            for i in range()
 
 
 
