@@ -36,12 +36,12 @@ def ukkonen_naive_loop(st):
             start = edge.start
 
             while start > end:
+                pass
             
         
 
 
 
-            for i in range()
 
 
 

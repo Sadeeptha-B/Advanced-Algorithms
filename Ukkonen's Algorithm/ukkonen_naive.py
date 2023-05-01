@@ -20,6 +20,7 @@ def ukkonen_naive(st):
 
     # Loop over phases
     for i in range(n):
+        print("========")   
         j = 0
 
         # Loop over extensions
@@ -30,7 +31,7 @@ def ukkonen_naive(st):
 
             if edge is None:
                 root.edges[ind] = Edge(suffix)
-                print(suffix, j, i, "f")
+                print(suffix, j, i, "rule2:alt")
                 j += 1
                 continue
 
@@ -43,7 +44,7 @@ def ukkonen_naive(st):
                 if edge_ind == len(edge):
                     # Case 1
                     if edge.next is None:
-                        print(suffix, j, i, "Rule1")
+                        print(suffix, j, i, "rule1")
                         edge.add_char(char)
                         break
 
@@ -73,6 +74,9 @@ def ukkonen_naive(st):
                     edge.next = node
                     edge.suffix = edge.suffix[0:edge_ind]
                     break
+
+                if ind + 1 == len(suffix):
+                    print(suffix, j, i , "rule3")
 
                 edge_ind += 1
 
