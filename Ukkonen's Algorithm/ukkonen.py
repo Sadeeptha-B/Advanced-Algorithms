@@ -1,11 +1,23 @@
 ALPHABET_SIZE = 91
 ASCII_START = 36
 
+
+'''
+Ukkonen's algorithm builds a suffix tree in phases
+At each phase, it will perform the necessary extensions to create
+the implicit suffix tree for [1..i]
+
+In doing so, it will have to perform the extensions for each suffix of the 
+implicit suffix tree [1..i]
+To do the extensions for each of these it will need to traverse to the necessary spot in 
+the tree.
+
+'''
 class Ukkonen:
     def __init__(self, st):
         self.st = st
         self.root = Node()
-        self.__globalend = End()
+        self.__global_end = End()
 
         self.run()
 
@@ -15,13 +27,79 @@ class Ukkonen:
 
         # Initialize extension, global end
         j = 0 
-        global_end = self.__globalend
-        global_end.set_value(0)
         active_node = self.root
-
 
         # Loop over phases
         for i in range(n):
+            self.__global_end.increment()
+
+            if j == i:
+                #Final character, no one to compare
+                ind = ord(st[j]) - ASCII_START
+                edge = active_node.edges[ind]
+
+                if edge is None:
+                    active_node.edges[ind] = Edge(j, self.__global_end)
+                    j += 1
+                else:
+                    active_edge = edge
+                    active_len = 1
+
+                continue
+
+            while j < i:
+
+                # Skip count traversal
+                suffix_len = i - j + 1
+
+                while suffix_len > len(active_edge):
+                    # Next node
+                    active_node = active_edge.next
+
+                    # Subtract edge traversal
+                    suffix_len -= len(active_edge)
+
+                    # next suffix char
+                    suffix_char =  st[j + len(active_edge)]
+
+                    # next active_edge: this edge MUST be present because rule 1 extensions should already be covered
+                    active_edge = active_node.edges[ord(suffix_char) - ASCII_START]
+
+            
+
+
+
+          
+
+
+
+
+                # Next character to compare for case 3
+                ext_char = st[i]
+                edge_char = st[active_edge.start + active_len]
+
+
+
+
+
+
+
+                
+
+
+
+
+                
+                
+                pass
+
+
+
+
+
+
+
+
             
             # Loop over extensions
             while j <= i:
@@ -30,8 +108,24 @@ class Ukkonen:
                 edge = active_node.edges[ind]   # Use active node instead
 
                 if edge is None:
-                    self.root.edges[ind] = Edge(j, global_end)
+                    active_node.edges[ind] = Edge(j, self.__global_end)
+                    # Will need to increment j or break out
                     continue
+
+                suffix_len = i - j + 1
+
+                while suffix_len > len(edge):
+                    
+                    # If larger, then jump to next node and make it active node
+
+                    # If no node, will relate to leaf extension which should be already covered.
+                    # This is not possible since j should be after all leaf extensions are already done
+                    active_node = edge.next
+                    # compare next
+                    
+                    
+
+
 
                 # edge is not none
                 # implement skip count
@@ -50,7 +144,7 @@ class Ukkonen:
                 
 
             # Rule 1
-            global_end.increment()
+            self.__global_end.increment()
 
             
 
@@ -58,19 +152,21 @@ class Ukkonen:
         arr = []
         return arr
 
-      
+
+
+
+
+
 '''
 Class to keep track of global end since Python does not pass values by reference
 '''
 class End:
-    def __init_(self):
-        self.end = None
+    def __init_(self, val=-1):
+        self.value = val
 
-    def set_value(self, value):
-        self.end = value
 
-    def increment(self, value=1):
-        self.end += value
+    def increment(self, val=1):
+        self.value += val
 
 
 # Suffix tree components
@@ -87,7 +183,7 @@ class Edge:
         self.next = None
 
     def __len__(self):
-        return self.end - self.start + 1
+        return self.end.value - self.start + 1
 
 
 if __name__ == "__main__":
