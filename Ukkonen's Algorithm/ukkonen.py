@@ -35,25 +35,10 @@ class Ukkonen:
         # Loop over phases
         for i in range(n):
             # Trick 1: Global end 
-            self.__global_end.increment()
-
-            if j == i:
-                ind = ord(st[j]) - ASCII_START
-                edge = active_node.edges[ind]
-
-                # Rule 2 alternate
-                if edge is None:
-                    # Trick 2: start, end representation
-                    active_node.edges[ind] = Edge(j, self.__global_end)
-                    j += 1
-                else:
-                    active_edge = edge
-                    active_ptr = 0
-
-                continue
+            self.__global_end.set_value(i)
 
             while j < i:
-                active_edge = active_node.edges[ord(st[i]) - ASCII_START]
+                active_edge = active_node.edges[ord(st[j]) - ASCII_START]
 
                 # Trick 3: Skip count traversal
                 suffix_len = i - j + 1
@@ -92,10 +77,25 @@ class Ukkonen:
                     active_edge.next = node
 
                     
-
                 active_node = active_node.link
+                # how to modify active ptr
                 j += 1
 
+
+            if j == i:
+                ind = ord(st[j]) - ASCII_START
+                edge = active_node.edges[ind]
+
+                # Rule 2 alternate
+                if edge is None:
+                    # Trick 2: start, end representation
+                    active_node.edges[ind] = Edge(j, self.__global_end)
+                    j += 1
+                else:
+                    active_edge = edge
+                    active_ptr = 0
+
+                continue
 
         
 
@@ -115,8 +115,9 @@ class End:
     def __init_(self, val=-1):
         self.value = val
 
-    def increment(self, val=1):
-        self.value += val
+    def set_value(self, val):
+        self.value = val
+
 
 
 # Suffix tree components
