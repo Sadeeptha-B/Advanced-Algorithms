@@ -19,41 +19,47 @@ class Ukkonen:
         self.root = Node()
         self.__global_end = End()
 
+        # Link root to itself
+        self.root.link = self.root
         self.run()
+
 
     def run(self):
         st = self.st + "$"
         n = len(st)
 
-        # Initialize extension, global end
+        # Initialize extension index, active node
         j = 0 
         active_node = self.root
 
         # Loop over phases
         for i in range(n):
+            # Trick 1: Global end 
             self.__global_end.increment()
 
             if j == i:
-                #Final character, no one to compare
                 ind = ord(st[j]) - ASCII_START
                 edge = active_node.edges[ind]
 
+                # Rule 2 alternate
                 if edge is None:
+                    # Trick 2: start, end representation
                     active_node.edges[ind] = Edge(j, self.__global_end)
                     j += 1
                 else:
                     active_edge = edge
-                    active_len = 1
+                    active_ptr = 0
 
                 continue
 
             while j < i:
+                active_edge = active_node.edges[ord(st[i]) - ASCII_START]
 
-                # Skip count traversal
+                # Trick 3: Skip count traversal
                 suffix_len = i - j + 1
 
                 while suffix_len > len(active_edge):
-                    # Next node
+                    # Next node: this MUST be present
                     active_node = active_edge.next
 
                     # Subtract edge traversal
@@ -65,88 +71,33 @@ class Ukkonen:
                     # next active_edge: this edge MUST be present because rule 1 extensions should already be covered
                     active_edge = active_node.edges[ord(suffix_char) - ASCII_START]
 
-            
 
+                # After skip count traversal: case 2 or case 3 must occur    
+                # Comparing the suffix extension char and the edge character
+                comp_ind = active_edge.start + active_ptr + 1
+                edge_char = st[comp_ind]       
+                extension = st[i]
 
+                # Rule 3
+                if extension == edge_char:
+                    active_ptr += 1
+                    break
+                # Rule 2
+                else:
+                    node = Node()    
+                    node.edges[ord(extension) - ASCII_START] = Edge(i, self.__global_end)
+                    node.edges[ord(edge_char) - ASCII_START] = Edge(comp_ind, self.__global_end)
+                    node.link = self.root
+                    active_edge.end = End(comp_ind - 1)
+                    active_edge.next = node
 
-          
-
-
-
-
-                # Next character to compare for case 3
-                ext_char = st[i]
-                edge_char = st[active_edge.start + active_len]
-
-
-
-
-
-
-
-                
-
-
-
-
-                
-                
-                pass
-
-
-
-
-
-
-
-
-            
-            # Loop over extensions
-            while j <= i:
-                char = st[j]
-                ind = ord(char) - ASCII_START
-                edge = active_node.edges[ind]   # Use active node instead
-
-                if edge is None:
-                    active_node.edges[ind] = Edge(j, self.__global_end)
-                    # Will need to increment j or break out
-                    continue
-
-                suffix_len = i - j + 1
-
-                while suffix_len > len(edge):
-                    
-                    # If larger, then jump to next node and make it active node
-
-                    # If no node, will relate to leaf extension which should be already covered.
-                    # This is not possible since j should be after all leaf extensions are already done
-                    active_node = edge.next
-                    # compare next
-                    
                     
 
-
-
-                # edge is not none
-                # implement skip count
-                # Once remainder of edge is reached, initiate rule 2 or rule 3
-                # if rule 2 create suffix link back to root
-                # next time active node will begin from there
-                # If rule 3, set active node active length and active edge
-
-            
+                active_node = active_node.link
                 j += 1
 
-            
-            # Increment j along with i if not rule 3 
-            # If rule 3 freeze
-            j += 1
-                
 
-            # Rule 1
-            self.__global_end.increment()
-
-            
+        
 
     def generate_suffix_array(self):
         arr = []
@@ -164,7 +115,6 @@ class End:
     def __init_(self, val=-1):
         self.value = val
 
-
     def increment(self, val=1):
         self.value += val
 
@@ -173,8 +123,10 @@ class End:
 # ===============================================================================================
 
 class Node:
-    def __init__(self):
+    def __init__(self, link=None):
         self.edges = [None]*ALPHABET_SIZE
+        self.link = None
+
 
 class Edge:
     def __init__(self, start, end):
