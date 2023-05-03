@@ -56,16 +56,33 @@ class Ukkonen:
 
                     # next active_edge
                     active_edge = active_node.edges[ord(suffix_char) - ASCII_START]
+                    active_ptr = 0
 
-                    # Rule 2 alternate
+                    # Rule 2 alt: rooted
                     if active_edge is None:
                         active_edge = Edge(char_ind, self.__global_end)
-                        active_node.edges[ord(suffix_char) - ASCII_START]  = active_edge
+                        active_node.edges[ord(suffix_char) - ASCII_START] = active_edge
 
-                    active_ptr = 0
-                # if suffix_len == 
-
-                # Handle rule 2 alternate case                
+                    # Rule 2 alternate: Suffix link
+                #     if active_edge is None:
+                #         while j < i:
+                #             active_edge = Edge(char_ind, self.__global_end)
+                #             active_node.edges[ord(suffix_char) - ASCII_START] = active_edge
+                #             active_node = active_node.link
+                #             j += 1
+                
+                if active_edge.start == i:
+                    active_node = active_node.link
+                    active_ptr = 1
+                    j += 1
+                    active_edge = active_node.edges[ord(st[j]) - ASCII_START]
+                    suffix_len = i - j + 1
+                    break
+                    
+                          
+                # if j == i:
+                #     break
+      
 
                 # After skip count traversal: case 2 or case 3 must occur    
                 # Comparing the suffix extension char and the edge character
@@ -113,9 +130,6 @@ class Ukkonen:
                     active_edge = edge
                     active_ptr = 1
                     suffix_len = 1 + active_ptr
-
-                
-
         
 
     def generate_suffix_array(self):
@@ -131,7 +145,7 @@ class Ukkonen:
 Class to keep track of global end since Python does not pass values by reference
 '''
 class End:
-    def __init_(self, val=-1):
+    def __init__(self, val=-1):
         self.value = val
 
     def set_value(self, val):
