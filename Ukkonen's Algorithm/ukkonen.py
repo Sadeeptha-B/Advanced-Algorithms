@@ -31,6 +31,7 @@ class Ukkonen:
         # Initialize extension index, active node
         j = 0 
         active_node = self.root
+        suffix_len = 0
 
         # Loop over phases
         for i in range(n):
@@ -38,11 +39,9 @@ class Ukkonen:
             self.__global_end.set_value(i)
 
             while j < i:
-                active_edge = active_node.edges[ord(st[j]) - ASCII_START] 
                     
                 # Trick 3: Skip count traversal
-                suffix_len = i - j + 1 
-                char_ind = j
+                char_ind = i - suffix_len + 1
 
                 while suffix_len > len(active_edge):
                     # Next node: this MUST be present
@@ -63,45 +62,42 @@ class Ukkonen:
                         active_edge = Edge(char_ind, self.__global_end)
                         active_node.edges[ord(suffix_char) - ASCII_START]  = active_edge
 
-                # if suffix_len == len(active_edge):
-                #     j += 1
-                #     active_node = active_node.link
-                #     active_edge = active_node.edges[ord(st[j]) - ASCII_START]
-                #     continue
+                    active_ptr = 0
+                # if suffix_len == 
+
+                # Handle rule 2 alternate case                
 
                 # After skip count traversal: case 2 or case 3 must occur    
                 # Comparing the suffix extension char and the edge character
-                comp_ind = active_edge.start + active_ptr + 1
+                comp_ind = active_edge.start + active_ptr
                 edge_char = st[comp_ind]       
                 extension = st[i]
 
                 # Rule 3
                 if extension == edge_char:
                     active_ptr += 1
+                    suffix_len += 1
                     break
-                # Rule 2
-                else:
-                    # New node
-                    node = Node()    
-                    node.edges[ord(extension) - ASCII_START] = Edge(i, self.__global_end)
-                    node.edges[ord(edge_char) - ASCII_START] = Edge(comp_ind, active_edge.end)
-                    node.link = self.root
 
-                    # wiring up active_edge
-                    active_edge.end = End(comp_ind - 1)
-                    node.edges[ord(edge_char) - ASCII_START].next = active_edge.next
-                    active_edge.next = node
 
-                    
+                # Rule 2: General
+                node = Node()    
+                node.edges[ord(extension) - ASCII_START] = Edge(i, self.__global_end)
+                node.edges[ord(edge_char) - ASCII_START] = Edge(comp_ind, active_edge.end)
+                node.link = self.root
+
+                # Wiring up active_edge
+                active_edge.end = End(comp_ind - 1)
+                node.edges[ord(edge_char) - ASCII_START].next = active_edge.next
+                active_edge.next = node
+
+                # Preparing for next extension
                 active_node = active_node.link
-                active_ptr = 0
-
-                # if active_node == self.root:
-                #     next_char = st[j]
-                # else:
-                #     next_char = st[active_edge.start]
+                active_ptr = 1
+                suffix_len -= 1
 
                 j += 1
+                active_edge = active_node.edges[ord(st[j]) - ASCII_START] 
 
 
             if j == i:
@@ -115,9 +111,10 @@ class Ukkonen:
                     j += 1
                 else:
                     active_edge = edge
-                    active_ptr = 0
+                    active_ptr = 1
+                    suffix_len = 1 + active_ptr
 
-                continue
+                
 
         
 
