@@ -38,10 +38,11 @@ class Ukkonen:
             self.__global_end.set_value(i)
 
             while j < i:
-                active_edge = active_node.edges[ord(st[j]) - ASCII_START]
-
+                active_edge = active_node.edges[ord(st[j]) - ASCII_START] 
+                    
                 # Trick 3: Skip count traversal
-                suffix_len = i - j + 1
+                suffix_len = i - j + 1 
+                char_ind = j
 
                 while suffix_len > len(active_edge):
                     # Next node: this MUST be present
@@ -51,11 +52,22 @@ class Ukkonen:
                     suffix_len -= len(active_edge)
 
                     # next suffix char
-                    suffix_char =  st[j + len(active_edge)]
+                    char_ind += len(active_edge)
+                    suffix_char =  st[char_ind]
 
-                    # next active_edge: this edge MUST be present because rule 1 extensions should already be covered
+                    # next active_edge
                     active_edge = active_node.edges[ord(suffix_char) - ASCII_START]
 
+                    # Rule 2 alternate
+                    if active_edge is None:
+                        active_edge = Edge(char_ind, self.__global_end)
+                        active_node.edges[ord(suffix_char) - ASCII_START]  = active_edge
+
+                # if suffix_len == len(active_edge):
+                #     j += 1
+                #     active_node = active_node.link
+                #     active_edge = active_node.edges[ord(st[j]) - ASCII_START]
+                #     continue
 
                 # After skip count traversal: case 2 or case 3 must occur    
                 # Comparing the suffix extension char and the edge character
@@ -69,16 +81,26 @@ class Ukkonen:
                     break
                 # Rule 2
                 else:
+                    # New node
                     node = Node()    
                     node.edges[ord(extension) - ASCII_START] = Edge(i, self.__global_end)
-                    node.edges[ord(edge_char) - ASCII_START] = Edge(comp_ind, self.__global_end)
+                    node.edges[ord(edge_char) - ASCII_START] = Edge(comp_ind, active_edge.end)
                     node.link = self.root
+
+                    # wiring up active_edge
                     active_edge.end = End(comp_ind - 1)
+                    node.edges[ord(edge_char) - ASCII_START].next = active_edge.next
                     active_edge.next = node
 
                     
                 active_node = active_node.link
-                # how to modify active ptr
+                active_ptr = 0
+
+                # if active_node == self.root:
+                #     next_char = st[j]
+                # else:
+                #     next_char = st[active_edge.start]
+
                 j += 1
 
 
