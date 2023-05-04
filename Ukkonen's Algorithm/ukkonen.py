@@ -22,7 +22,7 @@ class Ukkonen:
         # Link root to itself
         self.root.link = self.root
         self.root.id = 0
-        self.run()
+        self.run1()
 
 
 
@@ -34,14 +34,14 @@ class Ukkonen:
         active_node = self.root
         active_edge = None
         curr_ind = j
-        active_ptr = 0
+        previous= None
 
         for i in range(n):
             self.__global_end.set_value(i)
-
             edge = active_node.get_edge(st[curr_ind])
 
             if edge is None:
+                print(f"{j},{i} rule 2")
                 active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
                 j += 1
                 curr_ind += 1
@@ -49,6 +49,7 @@ class Ukkonen:
             
             active_edge = edge
             remaining = i - curr_ind + 1
+            node_found = False
 
             # Skip count
             while remaining > len(active_edge):
@@ -60,36 +61,62 @@ class Ukkonen:
                 active_edge = active_node.get_edge(st[curr_ind])
 
                 if active_edge is None:
-                    active_edge = Edge(curr_ind, self.__global_end, j)
-                    active_node.set_edge(st[curr_ind], active_edge)
+                    node_found = True
+                    while j <= i:
+                        print(f"{j}, {i} rule 2 alt")
+                        active_edge = Edge(curr_ind, self.__global_end, j)
+                        active_node.set_edge(st[curr_ind], active_edge)
+                        active_node = active_node.link
+                        j += 1
+                     
 
-
-            # Rule 2 alternate
-            if curr_ind == i:
-                # Rule 2 alternate propagatino
+            if node_found:
+                previous = None
+                curr_ind = j
                 continue
 
-            comp_ind = active_edge.start + remaining - 1 + active_ptr
-            
+            if i ==5:
+                print(remaining)
+            comp_ind = active_edge.start + remaining - 1 
+
             # Rule 3
             if st[comp_ind] == st[i]:
-                active_ptr += 1
+                print(f"{j},{i} rule 3")
                 continue
-
-            # Rule 2: general       
-            self.create_new_node(active_edge, st, i, comp_ind, j)
-
+                
             # Propagate rule 2
             while j <= i:
-
+                node = self.create_new_node(active_edge, st, i, comp_ind, j)
+                print(f"{j},{i} rule 2")
+                if previous is not None:
+                    previous.link = node
+                
+                previous = node
+                active_node = active_node.link
                 j += 1
-                curr_ind = j 
+                # print(j)
+                if active_node is self.root:
+                    curr_ind = j 
+                    remaining = i - curr_ind - 1
+
+                active_edge = active_node.get_edge(st[curr_ind])
+
+                if active_edge is None:
+                    print(f"{j}, {i} rule 2 alt:root")
+                    active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
+                    break
+
+                comp_ind = active_edge.start + remaining - 1
+
+                if st[comp_ind] == st[i]:
+                    break
+
+            # Reset before new phase
+            previous = None
+            curr_ind = j
 
 
 
-
-
-            
 
     def create_new_node(self, active_edge, st, i, comp_ind, j):
         node = Node()
@@ -97,11 +124,13 @@ class Ukkonen:
         node.set_edge(st[i], Edge(i, self.__global_end, j))
         node.set_edge(st[comp_ind], prev_path)  
         prev_path.next = active_edge.next
+        node.link = self.root
 
         active_edge.end = End(comp_ind - 1)
         active_edge.next = node
         active_edge.suffix_id = None
         
+        return node
 
 
 
@@ -304,11 +333,13 @@ class Edge:
 
 
 if __name__ == "__main__":
-    print(len("mississippi$"))
+    print(len("abcabxazaby$"))
     print("=====")
 
-    # ukkonen = Ukkonen("mississippi")
-    ukkonen = Ukkonen("abcabxazabyabcyab")
+    ukkonen = Ukkonen("mississippi")
+    # ukkonen = Ukkonen("abcabxazaby")
+    # ukkonen = Ukkonen("abcabxazabyabcyab")
+
 
     suffix_array = ukkonen.generate_suffix_array()
     print(suffix_array)
