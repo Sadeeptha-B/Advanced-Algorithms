@@ -38,7 +38,7 @@ class Ukkonen:
             # Trick 1: Global end 
             self.__global_end.set_value(i)
             while j < i:
-                    
+                
                 # Trick 3: Skip count traversal
                 char_ind = i - suffix_len + 1
 
@@ -71,12 +71,13 @@ class Ukkonen:
                 #             j += 1
                 
                 if active_edge.start == i:
+                    # print(f"{j}, {i} rule 2 alt")
                     active_node = active_node.link
                     active_ptr = 1
                     j += 1
                     active_edge = active_node.edges[ord(st[j]) - ASCII_START]
                     suffix_len = i - j + 1
-                    break
+                    continue
                     
                           
                 # if j == i:
@@ -91,12 +92,16 @@ class Ukkonen:
 
                 # Rule 3
                 if extension == edge_char:
+                    # print(f"{j}, {i} rule 3")
+
                     active_ptr += 1
                     suffix_len += 1
                     break
 
 
                 # Rule 2: General
+                # print(f"{j}, {i} rule 2 gen")
+
                 node = Node()    
                 node.edges[ord(extension) - ASCII_START] = Edge(i, self.__global_end, j)
                 node.edges[ord(edge_char) - ASCII_START] = Edge(comp_ind, active_edge.end, active_edge.suffix_id)
@@ -124,12 +129,17 @@ class Ukkonen:
                 # Rule 2 alternate
                 if edge is None:
                     # Trick 2: start, end representation
+                    # print(f"{j}, {i} rule 2 alt")
                     active_node.edges[ind] = Edge(j, self.__global_end, j)
                     j += 1
                 else:
+                    # print(f"{j}, {i} rule 3")
                     active_edge = edge
                     active_ptr = 1
                     suffix_len = 1 + active_ptr
+
+
+        
         
 
     def generate_suffix_array(self):
@@ -143,6 +153,7 @@ class Ukkonen:
                 continue
 
             if edge.next is None:
+                print(edge.start, edge.end.value, edge.suffix_id)
                 arr.append(edge.suffix_id)
             else:
                 self.inorder_aux(edge.next, arr)
@@ -186,7 +197,10 @@ class Edge:
 if __name__ == "__main__":
     print(len("mississippi$"))
     print("=====")
-    ukkonen = Ukkonen("mississippi")
+
+    # ukkonen = Ukkonen("mississippi")
+    ukkonen = Ukkonen("abcabxazabyabcyab")
+
     suffix_array = ukkonen.generate_suffix_array()
     print(suffix_array)
 

@@ -30,7 +30,7 @@ def ukkonen_naive(st):
             suffix = st[j:i+1]
 
             if edge is None:
-                root.edges[ind] = Edge(suffix)
+                root.edges[ind] = Edge(suffix, j)
                 print(suffix, j, i, "rule2:alt")
                 j += 1
                 continue
@@ -53,7 +53,7 @@ def ukkonen_naive(st):
 
                     # Rule 2: alternate
                     if current is None:
-                        node.edges[ord(char) - ASCII_START] = Edge(suffix[ind:i+1])
+                        node.edges[ord(char) - ASCII_START] = Edge(suffix[ind:i+1], j)
                         print(suffix, j, i, "rule2:alt")
                         break
                     else:
@@ -66,13 +66,14 @@ def ukkonen_naive(st):
                 if char != edge.suffix[edge_ind]:
                     print(suffix, j, i, "rule2:general")
                     node = Node()
-                    node.edges[ord(char) - ASCII_START] = Edge(suffix[ind:i+1])
-                    node.edges[ord(edge.suffix[edge_ind]) - ASCII_START] = Edge(edge.suffix[edge_ind:i+1])
+                    node.edges[ord(char) - ASCII_START] = Edge(suffix[ind:i+1], j)
+                    node.edges[ord(edge.suffix[edge_ind]) - ASCII_START] = Edge(edge.suffix[edge_ind:i+1], edge.suffix_id)
 
                     edge_node = node.edges[ord(edge.suffix[edge_ind]) - ASCII_START]
                     edge_node.next = edge.next
                     edge.next = node
                     edge.suffix = edge.suffix[0:edge_ind]
+                    edge.suffix_id = None
                     break
 
                 if ind + 1 == len(suffix):
@@ -82,15 +83,35 @@ def ukkonen_naive(st):
 
             j+=1
 
+    return root
+
+
+def generate_suffix_array(root):
+    arr = []
+    inorder_aux(root, arr)
+    return arr
+
+def inorder_aux(node, arr):
+    for edge in node.edges:
+        if edge is None:
+            continue
+
+        if edge.next is None:
+            arr.append(edge.suffix_id)
+        else:
+            inorder_aux(edge.next, arr)
+
+
 
 class Node:
     def __init__(self):
         self.edges = [None] * ALPHABET_SIZE
 
 class Edge:
-    def __init__(self, suffix):
+    def __init__(self, suffix, suffix_id=None):
         self.suffix = suffix
         self.next = None
+        self.suffix_id = suffix_id
 
     def __len__(self):
         return len(self.suffix)
@@ -102,4 +123,5 @@ class Edge:
 
 if __name__ == "__main__":
     # ukkonen_naive("apple")
-    ukkonen_naive("abcabxabcyab")
+    root = ukkonen_naive("abcabxazabyabcyab")
+    print(generate_suffix_array(root))
