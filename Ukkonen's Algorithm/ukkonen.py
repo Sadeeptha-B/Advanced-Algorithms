@@ -23,7 +23,6 @@ class Ukkonen:
         self.run()
 
 
-
     def run(self):
         st = self.st + "$"
         n = len(st)
@@ -41,9 +40,13 @@ class Ukkonen:
             if edge is None:
                 print(f"{j},{i} rule 2")
                 active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
+                active_node = active_node.link
+
+                if i == j:
+                    i += 1
+                    curr_ind = i
+
                 j += 1
-                i += 1
-                curr_ind += 1
                 continue
 
             active_edge = edge
@@ -61,17 +64,10 @@ class Ukkonen:
 
                 if active_edge is None:
                     node_found = True
-                    while j < i:
-                        print(f"{j}, {i} rule 2 alt")
-                        active_edge = Edge(curr_ind, self.__global_end, j)
-                        active_node.set_edge(st[curr_ind], active_edge)
-                        active_node = active_node.link
-                        j += 1
+                    break
                      
 
             if node_found:
-                previous = None
-                curr_ind = j
                 continue
 
 
@@ -191,7 +187,7 @@ if __name__ == "__main__":
     print("=====")
 
     # ukkonen = Ukkonen("mississippi")
-    ukkonen = Ukkonen("abcabxazaby")
+    # ukkonen = Ukkonen("abcabxazaby")
     ukkonen = Ukkonen("abcabxazabyabcyab")
 
 
