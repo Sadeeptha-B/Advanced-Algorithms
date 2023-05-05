@@ -30,13 +30,13 @@ class Ukkonen:
         st = self.st + "$"
         n = len(st)
 
-        j = 0 # Initial extension
+        i, j = 0, 0 # Initial phase and initial extension
         active_node = self.root
         active_edge = None
         curr_ind = j
         previous= None
 
-        for i in range(n):
+        while i < n:
             self.__global_end.set_value(i)
             edge = active_node.get_edge(st[curr_ind])
 
@@ -44,9 +44,10 @@ class Ukkonen:
                 print(f"{j},{i} rule 2")
                 active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
                 j += 1
+                i += 1
                 curr_ind += 1
                 continue
-            
+
             active_edge = edge
             remaining = i - curr_ind + 1
             node_found = False
@@ -62,7 +63,7 @@ class Ukkonen:
 
                 if active_edge is None:
                     node_found = True
-                    while j <= i:
+                    while j < i:
                         print(f"{j}, {i} rule 2 alt")
                         active_edge = Edge(curr_ind, self.__global_end, j)
                         active_node.set_edge(st[curr_ind], active_edge)
@@ -75,45 +76,41 @@ class Ukkonen:
                 curr_ind = j
                 continue
 
-            if i ==5:
-                print(remaining)
+
             comp_ind = active_edge.start + remaining - 1 
 
             # Rule 3
             if st[comp_ind] == st[i]:
                 print(f"{j},{i} rule 3")
+                i += 1
                 continue
                 
             # Propagate rule 2
-            while j <= i:
+            while j < i:
                 node = self.create_new_node(active_edge, st, i, comp_ind, j)
+
                 print(f"{j},{i} rule 2")
+
                 if previous is not None:
                     previous.link = node
                 
                 previous = node
                 active_node = active_node.link
                 j += 1
-                # print(j)
+
                 if active_node is self.root:
                     curr_ind = j 
-                    remaining = i - curr_ind - 1
+                    remaining = i - curr_ind + 1
 
                 active_edge = active_node.get_edge(st[curr_ind])
 
-                if active_edge is None:
-                    print(f"{j}, {i} rule 2 alt:root")
-                    active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
-                    break
-
-                comp_ind = active_edge.start + remaining - 1
-
-                if st[comp_ind] == st[i]:
-                    break
+                if active_edge is not None:
+                    comp_ind = active_edge.start + remaining - 1
 
             # Reset before new phase
             previous = None
             curr_ind = j
+
 
 
 
