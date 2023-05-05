@@ -17,16 +17,14 @@ class Ukkonen:
     def __init__(self, st):
         self.st = st
         self.root = Node()
-        self.__global_end = End()
-
-        # Link root to itself
         self.root.link = self.root
-        self.root.id = 0
-        self.run1()
+
+        self.__global_end = End()
+        self.run()
 
 
 
-    def run1(self):
+    def run(self):
         st = self.st + "$"
         n = len(st)
 
@@ -113,8 +111,6 @@ class Ukkonen:
 
 
 
-
-
     def create_new_node(self, active_edge, st, i, comp_ind, j):
         node = Node()
         prev_path = Edge(comp_ind, active_edge.end, active_edge.suffix_id)
@@ -129,144 +125,6 @@ class Ukkonen:
         
         return node
 
-
-
-    def run(self):
-        st = self.st + "$"
-        n = len(st)
-
-        # Initialize extension index, active node
-        j = 0 
-        active_node = self.root
-        suffix_len = 0
-        node_count  = 1
-
-        # Loop over phases
-        for i in range(n):
-            # Trick 1: Global end 
-            self.__global_end.set_value(i)
-                
-            while j < i:
-               
-                # Trick 3: Skip count traversal
-                char_ind = i - suffix_len + 1
-                if j == 5 and i == 8:
-                    print(char_ind, suffix_len, len(active_edge), (active_edge.start, active_edge.end.value))
-                
-
-                while suffix_len > len(active_edge):
-                    # Next node: this MUST be present
-                    active_node = active_edge.next
-
-                    # Subtract edge traversal
-                    suffix_len -= len(active_edge)
-
-                    # next suffix char
-                    char_ind += len(active_edge)
-                    suffix_char =  st[char_ind]
-
-                    # next active_edge
-                    active_edge = active_node.edges[ord(suffix_char) - ASCII_START]
-                    active_ptr = 0
-
-                    # Rule 2 alt: rooted
-                    if active_edge is None:
-                        active_edge = Edge(char_ind, self.__global_end, j)
-                        active_node.edges[ord(suffix_char) - ASCII_START] = active_edge
-
-
-                    skip_count = True
-                    # Rule 2 alternate: Suffix link
-                    # if active_edge is None:
-                    #     active_edge = Edge(char_ind, self.__global_end, j)
-                    #     while j < i:
-                    #         print(f"{j}, {i} rule 2 alt")
-                    #         active_node.edges[ord(suffix_char) - ASCII_START] = active_edge
-                    #         active_node = active_node.link
-                    #         # print(node.id)
-                    #         print(node.id)
-                    #         print("=======")
-                            
-                    #         j += 1
-                
-                if active_edge.start == i:
-                    print(f"{j}, {i} rule 2 alt")
-                    active_node = active_node.link
-                    active_ptr = 1
-                    j += 1
-                    active_edge = active_node.edges[ord(st[j]) - ASCII_START]
-                    suffix_len = i - j + 1
-                    continue
-                    
-                          
-                if j == i:
-                    break
-      
-
-                # After skip count traversal: case 2 or case 3 must occur    
-                # Comparing the suffix extension char and the edge character
-                comp_ind = active_edge.start + active_ptr 
-                edge_char = st[comp_ind]       
-                extension = st[i]
-
-                # Rule 3
-                if extension == edge_char:
-                    print(f"{j}, {i} rule 3")
-
-                    active_ptr += 1
-                    suffix_len += 1
-                  
-                    break
-
-
-                # Rule 2: General
-                print(f"{j}, {i} rule 2 gen")
-
-                node = Node()    
-                node.id = node_count 
-                node_count += 1
-                node.edges[ord(extension) - ASCII_START] = Edge(i, self.__global_end, j)
-                node.edges[ord(edge_char) - ASCII_START] = Edge(comp_ind, active_edge.end, active_edge.suffix_id)
-                node.link = self.root
-
-                # Wiring up active_edge
-                active_edge.end = End(comp_ind - 1)
-                node.edges[ord(edge_char) - ASCII_START].next = active_edge.next
-                active_edge.next = node
-                active_edge.suffix_id = None
-
-
-                # Preparing for next extension
-                active_node = active_node.link
-                active_ptr = 1
-                suffix_len -= 1
-                j += 1
-                active_edge = active_node.edges[ord(st[j]) - ASCII_START] 
-
-                if active_node == self.root:
-                    suffix_len = i - j + 1
-
-
-            if j == i:
-                ind = ord(st[j]) - ASCII_START
-                edge = self.root.edges[ind]
-
-                # Rule 2 alternate
-                if edge is None:
-                    # Trick 2: start, end representation
-                    print(f"{j}, {i} rule 2 alt:root")
-   
-                    self.root.edges[ind] = Edge(j, self.__global_end, j)
-                    j += 1
-                else:
-                    print(f"{j}, {i} rule 3")
-                    active_edge = edge
-                    active_ptr = 1
-                    suffix_len = 1 + active_ptr
-
-
-        
-        
 
     def generate_suffix_array(self):
         arr = []
@@ -307,7 +165,6 @@ class Node:
     def __init__(self, link=None):
         self.edges = [None]*ALPHABET_SIZE
         self.link = None
-        self.id = None
 
     def set_edge(self, char, edge):
         ind = ord(char) - ASCII_START
@@ -333,9 +190,9 @@ if __name__ == "__main__":
     print(len("abcabxazaby$"))
     print("=====")
 
-    ukkonen = Ukkonen("mississippi")
-    # ukkonen = Ukkonen("abcabxazaby")
-    # ukkonen = Ukkonen("abcabxazabyabcyab")
+    # ukkonen = Ukkonen("mississippi")
+    ukkonen = Ukkonen("abcabxazaby")
+    ukkonen = Ukkonen("abcabxazabyabcyab")
 
 
     suffix_array = ukkonen.generate_suffix_array()
