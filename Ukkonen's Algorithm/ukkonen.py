@@ -15,7 +15,7 @@ the tree.
 '''
 class Ukkonen:
     def __init__(self, st):
-        self.st = st
+        self.st = st + "$"
         self.root = Node()
         self.__global_end = End()
 
@@ -27,7 +27,7 @@ class Ukkonen:
 
 
     def run1(self):
-        st = self.st + "$"
+        st = self.st 
         n = len(st)
 
         i, j = 0, 0 # Initial phase and initial extension
@@ -38,44 +38,21 @@ class Ukkonen:
 
         while i < n:
             self.__global_end.set_value(i)
-            edge = active_node.get_edge(st[curr_ind])
 
-            if edge is None:
-                print(f"{j},{i} rule 2")
-                active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
-                j += 1
-                i += 1
-                curr_ind += 1
+            i, j, curr_ind, added = self.add_edge(i, j, active_node, curr_ind)
+
+            if added:
                 continue
 
-            active_edge = edge
-            remaining = i - curr_ind + 1
-            node_found = False
-
-            # Skip count
-            while remaining > len(active_edge):
-                active_node = active_edge.next
-                
-                curr_ind += len(active_edge)
-                remaining -= len(active_edge)
-
-                active_edge = active_node.get_edge(st[curr_ind])
-
-                if active_edge is None:
-                    node_found = True
-                    while j < i:
-                        print(f"{j}, {i} rule 2 alt")
-                        active_edge = Edge(curr_ind, self.__global_end, j)
-                        active_node.set_edge(st[curr_ind], active_edge)
-                        active_node = active_node.link
-                        j += 1
-                     
+            j, curr_ind, active_node, node_found =  self.skip_count(i, j, curr_ind, active_node)
 
             if node_found:
                 previous = None
                 curr_ind = j
                 continue
 
+            active_edge = active_node.get_edge(st[curr_ind])
+            remaining = i - curr_ind + 1
 
             comp_ind = active_edge.start + remaining - 1 
 
@@ -87,7 +64,7 @@ class Ukkonen:
                 
             # Propagate rule 2
             while j < i:
-                node = self.create_new_node(active_edge, st, i, comp_ind, j)
+                node = self.create_new_node(active_edge, i, comp_ind, j)
 
                 print(f"{j},{i} rule 2")
 
@@ -105,17 +82,69 @@ class Ukkonen:
                 active_edge = active_node.get_edge(st[curr_ind])
 
                 if active_edge is not None:
+                    k, curr_ind, active_node, node_found = self.skip_count(i, j, curr_ind, active_node)
+                    if node_found:
+                        self.add_edge(i, k, active_node, curr_ind)
+                    active_edge = active_node.get_edge(st[curr_ind])
+                    remaining = i - curr_ind + 1
                     comp_ind = active_edge.start + remaining - 1
 
             # Reset before new phase
             previous = None
             curr_ind = j
 
+        
+
+
+    def add_edge(self, i, j, active_node, curr_ind):
+        st = self.st
+        edge = active_node.get_edge(st[curr_ind])
+
+        if edge is None:
+            print(f"{j}, {i} rule 2")
+            active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
+            j += 1
+            i += 1
+            curr_ind += 1
+        
+
+
+        return i, j, curr_ind, edge is None
 
 
 
 
-    def create_new_node(self, active_edge, st, i, comp_ind, j):
+    def skip_count(self, i, j, curr_ind, active_node):
+        st = self.st
+        node_found = False
+        remaining = i - curr_ind + 1
+        active_edge = active_node.get_edge(st[curr_ind])
+
+
+        while remaining > len(active_edge):
+            active_node = active_edge.next
+
+            curr_ind += len(active_edge)
+            remaining -= len(active_edge)
+
+            active_edge = active_node.get_edge(st[curr_ind])
+
+            if active_edge is None:
+                node_found = True
+                while j < i:
+                    print(f"{j}, {i} rule 2 alt")
+                    edge = Edge(curr_ind, self.__global_end, j)
+                    active_node.set_edge(st[curr_ind], edge)
+                    active_node = active_node.link
+                    j += 1
+                break
+
+        return j , curr_ind, active_node, node_found
+
+
+
+    def create_new_node(self, active_edge, i, comp_ind, j):
+        st = self.st
         node = Node()
         prev_path = Edge(comp_ind, active_edge.end, active_edge.suffix_id)
         node.set_edge(st[i], Edge(i, self.__global_end, j))
@@ -265,8 +294,7 @@ class Ukkonen:
                     suffix_len = 1 + active_ptr
 
 
-        
-        
+    
 
     def generate_suffix_array(self):
         arr = []
@@ -333,8 +361,8 @@ if __name__ == "__main__":
     print(len("abcabxazaby$"))
     print("=====")
 
-    ukkonen = Ukkonen("mississippi")
-    # ukkonen = Ukkonen("abcabxazaby")
+    # ukkonen = Ukkonen("mississippi")
+    ukkonen = Ukkonen("googol")
     # ukkonen = Ukkonen("abcabxazabyabcyab")
 
 
