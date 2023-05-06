@@ -6,15 +6,7 @@ ASCII_START = 36
 
 
 '''
-Ukkonen's algorithm builds a suffix tree in phases
-At each phase, it will perform the necessary extensions to create
-the implicit suffix tree for [1..i]
-
-In doing so, it will have to perform the extensions for each suffix of the 
-implicit suffix tree [1..i]
-To do the extensions for each of these it will need to traverse to the necessary spot in 
-the tree.
-
+Class to modularize ukkonen components
 '''
 class Ukkonen:
     def __init__(self, st):
@@ -26,11 +18,24 @@ class Ukkonen:
         self.run()
 
 
+    '''
+    Builds suffix tree in phases. In each phase i, constructs the implicit 
+    suffix tree for [0..i] (0 based indexing). Maintains the following variables
+
+    i - The current phase
+    j - The starting index of the suffix within a phase that is being extended
+    active_node - The current node during tree traversal
+    active_edge - The current edge during traversal (this is connected to the active_node)
+    curr_ind - Index within [j..i] that corresponds to the tree position of active_edge.start
+                (Useful when skip counting)
+    remaining - The remaining length of the suffix after traversal: len([curr_ind.. i])
+    '''
     def run(self):
         st = self.st + "$"
         n = len(st)
 
-        i, j = 0, 0 # Initial phase and initial extension
+        # Initial phase and initial extension
+        i, j = 0, 0 
         active_node = self.root
         active_edge = None
         curr_ind = j
@@ -101,7 +106,10 @@ class Ukkonen:
             active_node = active_node.link            
             j += 1
 
-         
+
+    '''
+    Called when a new internal node is being created. 
+    '''  
     def create_new_node(self, active_edge, st, i, comp_ind, j):
         node = Node()
         prev_path = Edge(comp_ind, active_edge.end, active_edge.suffix_id)
@@ -117,6 +125,9 @@ class Ukkonen:
         return node
 
 
+    '''
+    Generate a suffix array from a constructed suffix tree
+    '''
     def generate_suffix_array(self):
         arr = []
         self.inorder_aux(self.root, arr)
@@ -150,6 +161,9 @@ class End:
 # Suffix tree components
 # ===============================================================================================
 
+'''
+Each node maintains a list of edges connected to it
+'''
 class Node:
     def __init__(self, link=None):
         self.edges = [None]*ALPHABET_SIZE
@@ -164,7 +178,9 @@ class Node:
         return self.edges[ind]
 
 
-
+'''
+Class to keep track of global end since Python does not pass primitives by reference
+'''
 class Edge:
     def __init__(self, start, end, suffix_id = None):
         self.start = start
