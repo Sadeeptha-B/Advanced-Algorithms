@@ -76,6 +76,8 @@ class Ukkonen:
 
             # Rule 3
             if st[comp_ind] == st[i]:
+                if previous is not None:
+                    previous.link = active_node
                 previous = None
                 print(f"{j},{i} rule 3")
                 i += 1
@@ -182,17 +184,53 @@ class Edge:
     def __len__(self):
         return self.end.value - self.start + 1
 
+from typing import List
+def suffix_array_naive(word: str) -> List[int]:
+    word = word + "$"
+    arr = list(range(len(word))) #O(n)
+    arr.sort(key = lambda x: word[x::]) # O(n* nlogn * comparison)
+    return arr
+
+def suffix_array_ukkonen(word: str) -> List[int]:
+    # slave away for hours and put your code here
+    ukkonen = Ukkonen(word)
+    return ukkonen.generate_suffix_array()
+    
 
 if __name__ == "__main__":
-    tests = ['abba', 'baab', 'abcab', 'acccb', 'googol', 'hatcat', 'aabcaba', 'abaaba', 'mississippi', 'abcabxabcyab', 'wolloomooloo']
+    # print(suffix_array_naive("aafaabaa"))
+    print(suffix_array_ukkonen("aafaabaa"))
+
+    # allowable chars:
+    # chars = "abcdef"
+    # for c1 in chars:
+    #     for c2 in chars:
+    #         for c3 in chars:
+    #             print('█', end="", flush=True)  # progress bar so you know if your code hung or not
+    #             for c4 in chars:
+    #                 for c5 in chars:
+    #                     for c6 in chars:
+    #                         for c7 in chars:
+    #                             for c8 in chars:
+    #                                 word = c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 
+    #                                 try:
+    #                                     ukk = suffix_array_ukkonen(word)
+    #                                     naive = suffix_array_naive(word)
+    #                                     assert(ukk == naive)
+    #                                 except AssertionError:
+    #                                     print(f"Error on {word}")
+    #                                     print(f"\tukkonen:\t {ukk}")
+    #                                     print(f"\tnaive:\t\t {naive}")
+# if __name__ == "__main__":
+    # tests = ['abba', 'baab', 'abcab', 'acccb', 'googol', 'hatcat', 'aabcaba', 'abaaba', 'mississippi', 'abcabxabcyab', 'wolloomooloo']
     # ukkonen = Ukkonen("mississippi")
     # ukkonen = Ukkonen("abcabxazaby")
     # for test in tests:
     #     ukkonen = Ukkonen(test)
     #     suffix_array = ukkonen.generate_suffix_array()
-    #     print(f"{test}: {suffix_array}")
+    #     print(f"{test}: {suffix_array} {suffix_array_naive(test)}")
 
-    ukkonen = Ukkonen(tests[-1])
-    suffix_array = ukkonen.generate_suffix_array()
-    print(suffix_array)
+    # ukkonen = Ukkonen(tests[-1])
+    # suffix_array = ukkonen.generate_suffix_array()
+    # print(suffix_array)
 
