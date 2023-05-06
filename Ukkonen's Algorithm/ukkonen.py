@@ -38,11 +38,12 @@ class Ukkonen:
             edge = active_node.get_edge(st[curr_ind])
 
             if edge is None:
-                # print(f"{j},{i} rule 2")
+                print(f"{j},{i} rule 2")
                 active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
                 active_node = active_node.link
 
                 if i == j:
+                    previous = None
                     i += 1
                     curr_ind = i
 
@@ -76,32 +77,35 @@ class Ukkonen:
             # Rule 3
             if st[comp_ind] == st[i]:
                 previous = None
-                # print(f"{j},{i} rule 3")
+                print(f"{j},{i} rule 3")
                 i += 1
                 continue
                 
             node = self.create_new_node(active_edge, st, i, comp_ind, j)
             
-            # print(f"{j},{i} rule 2")
+            print(f"{j},{i} rule 2")
 
             if previous is not None:
                 previous.link = node
 
             previous = node
+            if active_node is self.root:
+                curr_ind += 1
+
             active_node = active_node.link
 
             
-            if j == i:
-                previous = None
-                i += 1
-                curr_ind = i
-                j += 1
-                continue
+            # if j == i:
+            #     print("I run")
+            #     previous = None
+            #     i += 1
+            #     j += 1
+            #     curr_ind = j
+            #     continue
             
             j += 1
 
-            if active_node is self.root:
-                curr_ind = j
+         
 
 
 
@@ -131,7 +135,6 @@ class Ukkonen:
                 continue
 
             if edge.next is None:
-                # print(edge.start, edge.end.value, edge.suffix_id)
                 arr.append(edge.suffix_id)
             else:
                 self.inorder_aux(edge.next, arr)
@@ -181,14 +184,15 @@ class Edge:
 
 
 if __name__ == "__main__":
-    print(len("abcabxazaby$"))
-    print("=====")
-
     tests = ['abba', 'baab', 'abcab', 'acccb', 'googol', 'hatcat', 'aabcaba', 'abaaba', 'mississippi', 'abcabxabcyab', 'wolloomooloo']
     # ukkonen = Ukkonen("mississippi")
     # ukkonen = Ukkonen("abcabxazaby")
-    for test in tests:
-        ukkonen = Ukkonen(test)
-        suffix_array = ukkonen.generate_suffix_array()
-        print(suffix_array)
+    # for test in tests:
+    #     ukkonen = Ukkonen(test)
+    #     suffix_array = ukkonen.generate_suffix_array()
+    #     print(f"{test}: {suffix_array}")
+
+    ukkonen = Ukkonen(tests[-1])
+    suffix_array = ukkonen.generate_suffix_array()
+    print(suffix_array)
 
