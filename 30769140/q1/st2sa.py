@@ -234,7 +234,7 @@ def write_output(suffix_array):
     with open(OUTPUT_FILE, 'w') as file:
         for i in range(n-1):
             file.write(f"{suffix_array[i]+1}\n")
-        file.write(f"{suffix_array[-1]}")
+        file.write(f"{suffix_array[-1]+1}")
 
             
 
