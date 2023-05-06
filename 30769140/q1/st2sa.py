@@ -8,6 +8,7 @@ import sys
 OUTPUT_FILE = "output_sa.txt"
 ALPHABET_SIZE = 91  # 126 - 37 + 2
 ASCII_START = 36    #Starting ASCII char
+TERMINAL_CHAR = "$"
 
 
 '''
@@ -36,7 +37,7 @@ class Ukkonen:
     remaining - The remaining length of the suffix after traversal: len([curr_ind.. i])
     '''
     def run(self):
-        st = self.st + "$"
+        st = self.st + TERMINAL_CHAR
         n = len(st)
 
         # Initialisation
