@@ -6,9 +6,10 @@ Student ID: 30769140
 import sys
 import heapq
 
+
 OUTPUT_FILE = "bwtencoded.bin"
 TERMINAL_CHAR = "$"
-ASCII_RANGE = 91    # 126 - 37 + 2 (For terminal char and inclusive end)
+ALPHABET_SIZE = 91    # 126 - 37 + 2 (For terminal char and inclusive end)
 ASCII_START = 36
 ASCII_HEADER_SIZE = 7
 
@@ -31,20 +32,22 @@ class Encoder:
     a list with the frequencies for each character
     '''
     def __construct_bwt_freq(self, text):
-        # Preprocess text
-        text += TERMINAL_CHAR
-
+ 
         # Construct suffix array
-        suffix_array = naive_suffix_array(text)  # Plug in efficient version here
+        ukkonen = Ukkonen(text)
+        suffix_array = ukkonen.generate_suffix_array()
+
+        text = text + TERMINAL_CHAR
         n = len(suffix_array)
         res = []
 
-        freq_array = [None] * ASCII_RANGE
+        freq_array = [None] * ALPHABET_SIZE
 
         # Loop over suffix array
         for elem in suffix_array:
 
             # Construct bwt
+
             ind = (elem - 1) % n
             char = text[ind]
             res.append(char)
@@ -351,7 +354,6 @@ class FileWriter:
             self.__ptr += 1
 
         bitstring = "".join(self.__buffer)
-        print(bitstring)
 
         num = int(bitstring, 2)
         byte = num.to_bytes(1, "big")
@@ -365,6 +367,208 @@ class FileWriter:
         if self.__file is not None:
             self.close_file()
         
+
+# ===================================================================
+# 
+# Ukkonen implementation. Same as Q1
+# Put here in case of any import issues
+#
+# ===================================================================
+
+
+'''
+Ukkonen class
+'''
+class Ukkonen:
+    def __init__(self, st):
+        self.st = st
+        self.root = Node()
+        self.root.link = self.root
+
+        self.__global_end = End()
+        self.run()
+
+
+    '''
+    Builds suffix tree in phases. In each phase i, constructs the implicit 
+    suffix tree for [0..i] (0 based indexing).
+    '''
+    def run(self):
+        st = self.st + TERMINAL_CHAR
+        n = len(st)
+
+        # Initialisation
+        i, j = 0, 0 
+        active_node = self.root
+        active_edge = None
+        curr_ind = j
+        previous= None
+
+        # Loop over phases
+        while i < n:
+
+            # Maintain global end
+            self.__global_end.set_value(i)
+            edge = active_node.get_edge(st[curr_ind])
+
+            # Handle all rule 2 alternate cases
+            if edge is None:
+                active_node.set_edge(st[curr_ind], Edge(curr_ind, self.__global_end, j))
+                
+                # Suffix link manipulation
+                if previous is not None:
+                    previous.link = active_node
+                    previous = None
+                active_node = active_node.link
+
+                # Move to next phase
+                if i == j:
+                    previous = None
+                    i += 1
+                    curr_ind = i
+
+                j += 1
+                continue
+
+            active_edge = edge
+            remaining = i - curr_ind + 1
+            node_found = False
+
+            # Skip count
+            while remaining > len(active_edge):
+                active_node = active_edge.next
+                
+                curr_ind += len(active_edge)
+                remaining -= len(active_edge)
+
+                active_edge = active_node.get_edge(st[curr_ind])
+
+                # If rule 2 alternate is encountered during skip count
+                if active_edge is None:
+                    node_found = True
+                    break
+                     
+
+            if node_found:
+                continue
+
+            # Index on active edge to compare with i 
+            comp_ind = active_edge.start + remaining - 1 
+
+            # Handle rule 3: showstopper
+            # Moves to the next phase while freezing j till a rule 2 occurs
+            if st[comp_ind] == st[i]:
+                
+                # Suffix link
+                if previous is not None:
+                    previous.link = active_node
+                previous = None
+
+                i += 1
+                continue
+                
+
+            # Handle all rule 2 general cases
+            node = self.create_new_node(active_edge, st, i, comp_ind, j)
+
+            # Suffix link manipulation
+            if previous is not None:
+                previous.link = node
+            previous = node
+
+            # Reset curr_ind
+            if active_node is self.root:
+                curr_ind += 1
+
+            # Suffix link traversal
+            active_node = active_node.link            
+            j += 1
+
+
+    '''
+    Called when a new internal node is being created. 
+    '''
+    def create_new_node(self, active_edge, st, i, comp_ind, j):
+        node = Node()
+        prev_path = Edge(comp_ind, active_edge.end, active_edge.suffix_id)
+        node.set_edge(st[i], Edge(i, self.__global_end, j))
+        node.set_edge(st[comp_ind], prev_path)  
+        prev_path.next = active_edge.next
+        node.link = self.root
+
+        active_edge.end = End(comp_ind - 1)
+        active_edge.next = node
+        active_edge.suffix_id = None
+        
+        return node
+
+    '''
+    Generate a suffix array from a constructed suffix tree
+    '''
+    def generate_suffix_array(self):
+        arr = []
+        self.inorder_aux(self.root, arr)
+        return arr
+    
+
+    def inorder_aux(self, node, arr):
+        for edge in node.edges:
+            if edge is None:
+                continue
+
+            if edge.next is None:
+                arr.append(edge.suffix_id)
+            else:
+                self.inorder_aux(edge.next, arr)
+
+
+
+
+# Suffix Tree components
+# ===================================================================================================
+
+'''
+Each node maintains a list of edges connected to it
+'''
+class Node:
+    def __init__(self, link=None):
+        self.edges = [None]*ALPHABET_SIZE
+        self.link = None
+
+    def set_edge(self, char, edge):
+        ind = ord(char) - ASCII_START
+        self.edges[ind] = edge
+
+    def get_edge(self, char):
+        ind = ord(char) - ASCII_START
+        return self.edges[ind]
+
+
+'''
+Edges stores the start and end indices, also the next node connected to it, 
+if any. If the edge is a leaf, it will contain a non null suffix_id
+'''
+class Edge:
+    def __init__(self, start, end, suffix_id = None):
+        self.start = start
+        self.end= end
+        self.next = None
+        self.suffix_id = suffix_id
+
+    def __len__(self):
+        return self.end.value - self.start + 1
+
+
+'''
+Class to keep track of global end since Python does not pass primitives by reference
+'''
+class End:
+    def __init__(self, val=-1):
+        self.value = val
+
+    def set_value(self, val):
+        self.value = val
+
 
 
 # Reading input
