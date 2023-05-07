@@ -237,7 +237,7 @@ def write_output(suffix_array):
             file.write(f"{suffix_array[i]+1}\n")
         file.write(f"{suffix_array[-1]+1}")
 
-            
+           
 
 if __name__ == "__main__":
     _, inputfile = sys.argv
@@ -253,3 +253,4 @@ if __name__ == "__main__":
 
     # Write output to file
     write_output(suffix_array)
+   

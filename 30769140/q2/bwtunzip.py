@@ -1,3 +1,8 @@
+'''
+Author: Sadeeptha Bandara
+Student ID: 30769140
+'''
+
 import sys
 
 OUTPUT_FILE = 'recovered.txt'

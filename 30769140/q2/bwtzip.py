@@ -1,6 +1,10 @@
 '''
 Author: Sadeeptha Bandara
 Student ID: 30769140
+
+Hello :) I expect the encoder to work without issue, but if there is any issue due 
+to using Ukkonen for suffix array construction, please be kind enough to test with the 
+provided naive_suffix_array implementation to check if the Encoder behaves as expected.
 '''
 
 import sys
@@ -14,6 +18,7 @@ ASCII_START = 36
 ASCII_HEADER_SIZE = 7
 
 def naive_suffix_array(text):
+    text = text + TERMINAL_CHAR
     arr = list(range(len(text))) #O(n)
     arr.sort(key = lambda x: text[x::]) # O(n* nlogn * comparison)
 
@@ -36,6 +41,7 @@ class Encoder:
         # Construct suffix array
         ukkonen = Ukkonen(text)
         suffix_array = ukkonen.generate_suffix_array()
+        # suffix_array = naive_suffix_array(text)
 
         text = text + TERMINAL_CHAR
         n = len(suffix_array)
