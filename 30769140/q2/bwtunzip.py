@@ -27,7 +27,7 @@ the header and data
 '''
 class Decoder:
     def __init__(self, reader):
-        self.reader = reader
+        self.__reader = reader
         self.bwt_length = 0
         self.unique_bwt = 0
         self.__huffman_root = Node()
@@ -37,7 +37,7 @@ class Decoder:
     Drives the decoding algorithm
     '''
     def decode(self):
-        reader.open_file()
+        self.__reader.open_file()
 
         try:
             self.process_header()
@@ -47,7 +47,7 @@ class Decoder:
             data = self.__decode_data()
             txt = self.invert_bwt(data)
         finally:
-            reader.close_file()
+            self.__reader.close_file()
 
         return txt
 
@@ -82,7 +82,7 @@ class Decoder:
         for _ in range(self.unique_bwt):
             ascii_code = self.decode_ascii()
             huffman_len = self.decode_elias()
-            huffman_lst = reader.read_bits(huffman_len)
+            huffman_lst = self.__reader.read_bits(huffman_len)
 
             if len(huffman_lst) != huffman_len:
                 raise IOError('No more bits to read')
@@ -114,7 +114,7 @@ class Decoder:
         node = self.__huffman_root
 
         while node.elem_ascii is None:
-            bit = reader.read_bit()
+            bit = self.__reader.read_bit()
             if bit is None:
                 raise IOError('Ran out of bits while decoding')
             
@@ -136,7 +136,7 @@ class Decoder:
 
         while True:
             bit_count = num + 1
-            bitstr = reader.read_bitstr(bit_count)
+            bitstr = self.__reader.read_bitstr(bit_count)
 
             if len(bitstr) != bit_count:
                 raise IOError('No more bits to read')
@@ -153,7 +153,7 @@ class Decoder:
     Reads header size ascii bits and returns relevant codepoint.
     '''
     def decode_ascii(self):
-        ascii_bits = reader.read_bitstr(ASCII_HEADER_SIZE)
+        ascii_bits = self.__reader.read_bitstr(ASCII_HEADER_SIZE)
 
         if len(ascii_bits) != ASCII_HEADER_SIZE:
             raise IOError('No more bits to read')

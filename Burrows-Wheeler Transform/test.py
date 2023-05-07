@@ -1,6 +1,6 @@
 import filecmp
-from bwtunzip import BinaryReader
-from bwtunzip import Decoder
+from bwtzip import FileWriter, Encoder
+from bwtunzip import BinaryReader, Decoder
 
 # Place test cases in q2_test
 files = [f'q2_test/bwtencoded{i}.bin' for i in range(600)]

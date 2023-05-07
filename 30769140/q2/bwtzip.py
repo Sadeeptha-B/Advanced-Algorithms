@@ -30,7 +30,7 @@ class Encoder:
     def __init__(self, text, writer):
         self.bwt, self.range_array = self.__construct_bwt_freq(text)
         self.bwt_unique_count = self.__generate_huffman_codes()
-        self.writer = writer
+        self.__writer = writer
 
     '''
     Constructs the Burrows-Wheeler transform for the provided text and creates 
@@ -163,6 +163,7 @@ class Encoder:
     
     '''
     def __encode_header(self):
+        writer = self.__writer
         # Length of bwt
         bwt_length = self.__generate_elias_code(len(self.bwt))
 
@@ -194,6 +195,7 @@ class Encoder:
     Perform run length encoding
     '''
     def encode(self):
+        writer = self.__writer
         writer.open_file()
 
         self.__encode_header()
