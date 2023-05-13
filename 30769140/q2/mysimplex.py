@@ -20,8 +20,51 @@ def tableau_simplex(text):
 
 
 def read_file(filename):
-    pass
+    with open(filename, 'r') as file:
+        # Decision variables
+        file.readline()
+        decisions = int(file.readline().strip())
 
+        # Constraints
+        file.readline()
+        constraints = int(file.readline().strip())
+
+        # Objective
+        file.readline()
+        objective = str_to_lst(file.readline(), decisions)
+
+        # Constraints LHS
+        file.readline()
+        
+        constraints_matrix = [[None, None] for _ in range(constraints)]
+
+        for i in range(constraints):
+            constraints_matrix[i][0] = str_to_lst(file.readline(), decisions)
+
+        # Constraints RHS
+        file.readline()
+
+        for i in range(constraints):
+            constraints_matrix[i][1] = int(file.readline().strip())
+
+
+    return decisions, constraints, objective, constraints_matrix
+
+
+def str_to_lst(st, decisions):
+    if st[0] == "#":
+        raise ValueError()
+
+    res =  st.strip().split(',')
+
+    if len(res) != decisions:
+        raise ValueError('No of coefficients should be same as number of decision variables')
+
+    return [int(v) for v in res]
+
+
+        
+        
 def write_output(decisions, optimal):
     headings = ["# optimalDecisions\n", "\n# optimalObjective\n"]
     outputs = [', '.join(decisions), optimal]
@@ -41,10 +84,10 @@ if __name__ == "__main__":
     text = read_file(filename)
 
     # Implement tableau simplex
-    decisions,optimal = tableau_simplex(text)
+    # decisions,optimal = tableau_simplex(text)
 
-    # write to file
-    write_output(decisions, optimal)
+    # # write to file
+    # write_output(decisions, optimal)
 
 
 
