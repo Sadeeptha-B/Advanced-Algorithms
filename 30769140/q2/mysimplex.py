@@ -37,15 +37,17 @@ def read_file(filename):
         file.readline()
         
         constraints_matrix = [[None, None] for _ in range(constraints)]
+        LHS_IND = 0
+        RHS_IND = 1
 
         for i in range(constraints):
-            constraints_matrix[i][0] = str_to_lst(file.readline(), decisions)
+            constraints_matrix[i][LHS_IND] = str_to_lst(file.readline(), decisions)
 
         # Constraints RHS
         file.readline()
 
         for i in range(constraints):
-            constraints_matrix[i][1] = int(file.readline().strip())
+            constraints_matrix[i][RHS_IND] = int(file.readline().strip())
 
 
     return decisions, constraints, objective, constraints_matrix
@@ -62,8 +64,7 @@ def str_to_lst(st, decisions):
 
     return [int(v) for v in res]
 
-
-        
+      
         
 def write_output(decisions, optimal):
     headings = ["# optimalDecisions\n", "\n# optimalObjective\n"]
@@ -88,7 +89,3 @@ if __name__ == "__main__":
 
     # # write to file
     # write_output(decisions, optimal)
-
-
-
-
