@@ -14,15 +14,15 @@ OUTPUT_FILE = "lpsolution.txt"
 # Note that the code will need to be generalizable to any number decision variables and 
 # constraints
 
-def tableau_simplex(text):
+def tableau_simplex(obj_func, constraints_matrix, rhs):
     # Return decisions list and optimal value
+
+
+    
     return ['5','9'], str(23)
 
 
-def preprocess_input(objective, constraints):
-    
 
-    pass
 
 # I/O operations
 # ================================================================================
@@ -40,7 +40,8 @@ of the slack variables have been added.
 
 rhs_values: A list containing the rhs values in float format
 
-All returned numbers are floats.
+All returned numbers are floats. The preprocessing is done along with the file reading to avoid 
+additional space and time complexity if preprocessing later.
 '''
 def read_preprocess(filename):
     with open(filename, 'r') as file:
@@ -52,11 +53,11 @@ def read_preprocess(filename):
         file.readline()
         constraints = int(file.readline().strip())
 
-        # Objective
+        # Objective function
         file.readline()
         objective = get_padded_lst(file.readline(), decisions + constraints)
 
-        # Constraints LHS
+        # Constraints LHS:
         file.readline()
 
         constraints_matrix = []
@@ -64,11 +65,10 @@ def read_preprocess(filename):
         
         for _ in range(constraints):
             elem = get_padded_lst(file.readline(), decisions + constraints)
-            elem[ptr] = 1.0
+            elem[ptr] = 1.0   # Add slack variable coefficient
             constraints_matrix.append(elem)
             ptr += 1
 
-        print(constraints_matrix)
 
         # Constraints RHS
         file.readline()
@@ -79,8 +79,7 @@ def read_preprocess(filename):
 
         print(rhs_values)
 
-    return constraints, objective, constraints_matrix
-
+    return objective, constraints_matrix, rhs_values
 
 
 '''
@@ -90,7 +89,7 @@ of the string will pad the specified character
 '''
 def get_padded_lst(st, size, pad=0.0):
     if st[0] == "#":
-        raise ValueError()
+        raise ValueError('Expected numerical string')
     
     if type(pad) is not float:
         raise ValueError('Padding must be float')
@@ -121,10 +120,10 @@ if __name__ == "__main__":
     _, filename = sys.argv
 
     # Read input 
-    text = read_preprocess(filename)
+    obj_function, constraints_matrix, rhs = read_preprocess(filename)
 
     # Implement tableau simplex
-    # decisions,optimal = tableau_simplex(text)
+    decisions,optimal = tableau_simplex(obj_function, constraints_matrix, rhs)
 
     # # write to file
     # write_output(decisions, optimal)
