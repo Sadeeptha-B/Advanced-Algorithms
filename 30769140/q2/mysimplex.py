@@ -14,14 +14,50 @@ OUTPUT_FILE = "lpsolution.txt"
 # Note that the code will need to be generalizable to any number decision variables and 
 # constraints
 
-def tableau_simplex(obj_func, constraints_matrix, rhs):
-    # Return decisions list and optimal value
+def tableau_simplex(obj_func, constraint_matrix, rhs):
+    no_decisions = len(obj_func) - len(rhs)
 
+    non_basic_idx = [i for i in range(no_decisions)]
+    basic_idx = [no_decisions + i for i in range(len(rhs))]
 
+    modified_obj = get_next_basic(basic_idx, obj_func, constraint_matrix)
     
+
+
+
+    # print(obj_func)
+    # print(constraints_matrix)
+    # print(rhs)
+
+
+
+    # Return decisions list and optimal value
     return ['5','9'], str(23)
 
+def get_next_basic(basic_idx, obj_func, constraint_matrix):
+    maximum, max_ind = float('-inf'), None
 
+    for i in range(len(obj_func)):
+        constr_ptr = 0
+        row_sum =  0
+        for idx in basic_idx:
+            row_sum += obj_func[idx] * constraint_matrix[constr_ptr][i]
+            constr_ptr += 1
+
+        value = obj_func[i] - row_sum
+
+        if value > maximum:
+            maximum = value
+            max_ind = i
+
+    return max_ind
+
+
+def any_positive(lst):
+    
+
+
+    pass
 
 
 # I/O operations
@@ -47,24 +83,24 @@ def read_preprocess(filename):
     with open(filename, 'r') as file:
         # No of Decision variables
         file.readline()
-        decisions = int(file.readline().strip())
+        no_decisions = int(file.readline().strip())
 
         # No of Constraints
         file.readline()
-        constraints = int(file.readline().strip())
+        no_constraints = int(file.readline().strip())
 
         # Objective function
         file.readline()
-        objective = get_padded_lst(file.readline(), decisions + constraints)
+        objective = get_padded_lst(file.readline(), no_decisions + no_constraints)
 
         # Constraints LHS:
         file.readline()
 
         constraints_matrix = []
-        ptr = decisions
+        ptr = no_decisions
         
-        for _ in range(constraints):
-            elem = get_padded_lst(file.readline(), decisions + constraints)
+        for _ in range(no_constraints):
+            elem = get_padded_lst(file.readline(), no_decisions + no_constraints)
             elem[ptr] = 1.0   # Add slack variable coefficient
             constraints_matrix.append(elem)
             ptr += 1
@@ -74,10 +110,8 @@ def read_preprocess(filename):
         file.readline()
         rhs_values = []
 
-        for _ in range(constraints):
+        for _ in range(no_constraints):
             rhs_values.append(float(file.readline().strip()))
-
-        print(rhs_values)
 
     return objective, constraints_matrix, rhs_values
 
