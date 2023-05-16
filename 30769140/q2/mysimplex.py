@@ -20,9 +20,18 @@ def tableau_simplex(obj_func, constraint_matrix, rhs):
     non_basic_idx = [i for i in range(no_decisions)]
     basic_idx = [no_decisions + i for i in range(len(rhs))]
 
-    modified_obj = get_next_basic(basic_idx, obj_func, constraint_matrix)
-    
+    basic_ind = get_next_basic(basic_idx, obj_func, constraint_matrix)
 
+    while basic_ind is not None:
+        nonbasic_ind = get_next_non_basic(basic_ind, constraint_matrix, rhs)
+
+        if nonbasic_ind is None:
+            # No solutions exist
+            break
+        
+
+        print(nonbasic_ind)
+        break
 
 
     # print(obj_func)
@@ -50,14 +59,29 @@ def get_next_basic(basic_idx, obj_func, constraint_matrix):
             maximum = value
             max_ind = i
 
+    if maximum < 0:
+        max_ind = None
+
     return max_ind
 
 
-def any_positive(lst):
-    
+def get_next_non_basic(basic_ind, constraint_matrix, rhs):
+    minimum, min_ind = float('inf'), None
 
+    for i, r_val in enumerate(rhs):
+        basic_coef = constraint_matrix[i][basic_ind]
 
-    pass
+        # Divide by zero check
+        if basic_coef == 0:
+            continue 
+
+        value = r_val / basic_coef
+
+        if value < minimum and value > 0:
+            minimum = value
+            min_ind = i
+
+    return min_ind
 
 
 # I/O operations
