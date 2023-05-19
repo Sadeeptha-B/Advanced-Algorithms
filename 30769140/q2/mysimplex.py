@@ -7,42 +7,45 @@ import sys
 
 OUTPUT_FILE = "lpsolution.txt"
 
-# Implement Tableau simplex to solve a linear program in it's standard form
-# Maximize a given linear objective function involving decision variables that are non
-# negative, subject to a set of linear constraints
 
-# Note that the code will need to be generalizable to any number decision variables and 
-# constraints
-
+'''
+Implements the Tableau Simplex Algorithm to solve a linear problem of the standard
+form provided an objective function, constraint matrix and rhs values
+'''
 def tableau_simplex(obj_func, constraint_matrix, rhs):
     no_decisions = len(obj_func) - len(rhs)
 
+    # Indices of basic and non basic variables as per objective function
     non_basic_idx = [i for i in range(no_decisions)]
     basic_idx = [no_decisions + i for i in range(len(rhs))]
 
-    basic_ind = get_next_basic(basic_idx, obj_func, constraint_matrix)
+    # which variable index from obj func to swap in
 
-    while basic_ind is not None:
+    while True:
+        basic_ind = get_next_basic(basic_idx, obj_func, constraint_matrix)
+
+        if basic_ind is None:
+            # Do needful to extract return value
+            break
+
         nonbasic_ind = get_next_non_basic(basic_ind, constraint_matrix, rhs)
 
         if nonbasic_ind is None:
             # No solutions exist
             break
+
         
-
-        print(nonbasic_ind)
-        break
-
-
-    # print(obj_func)
-    # print(constraints_matrix)
-    # print(rhs)
-
+        
+        pass
 
 
     # Return decisions list and optimal value
     return ['5','9'], str(23)
 
+
+'''
+
+'''
 def get_next_basic(basic_idx, obj_func, constraint_matrix):
     maximum, max_ind = float('-inf'), None
 
@@ -100,8 +103,8 @@ of the slack variables have been added.
 
 rhs_values: A list containing the rhs values in float format
 
-All returned numbers are floats. The preprocessing is done along with the file reading to avoid 
-additional space and time complexity if preprocessing later.
+All returned numbers are floats. The preprocessing is done along with the file reading 
+to avoid additional space and time complexity if preprocessing later.
 '''
 def read_preprocess(filename):
     with open(filename, 'r') as file:
@@ -143,7 +146,7 @@ def read_preprocess(filename):
 '''
 Given a numerical string, will return a list of the specified size with the 
 numbers converted to floats. If the specified size is larger than the length 
-of the string will pad the specified character
+of the string will pad with the padding character
 '''
 def get_padded_lst(st, size, pad=0.0):
     if st[0] == "#":
