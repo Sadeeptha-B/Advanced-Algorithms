@@ -26,9 +26,7 @@ class TableauSimplex():
 
 
     def run(self):
-        # Initialization
         obj_func = self.obj_func
-        constr_matrix = self.constr_matrix
         rhs = self.rhs
         no_decisions = len(obj_func) - len(rhs)
 
@@ -36,44 +34,58 @@ class TableauSimplex():
         basic_idx = [no_decisions + i for i in range(len(rhs))]
 
         while True:
+            # Index of variable to make a basic variable
             basic_ind = self.get_next_basic(basic_idx)
 
             if basic_ind is None:               
                 break
 
-            # Index of variable to fix (constr matrix)
+            # Index of variable to make nonbasic
             nonbasic_ind = self.get_next_nonbasic(basic_ind)
             
             if nonbasic_ind is None:
                 # No solutions exist
                 break
 
-            # put basic_ind at the index of basic_var being removed
             basic_idx[nonbasic_ind] = basic_ind 
 
-            # Divide entire row of new basic_ind and rhs
-            basic_row = constr_matrix[nonbasic_ind]
-            coeff = basic_row[basic_ind]
+            # Express all equations considering new basic variable
+            self.compute_next_eqns(nonbasic_ind, basic_ind)
 
-            for i, elem in enumerate(basic_row):
-                basic_row[i] = elem / coeff
-
-            rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
-
-            # Express all equations wrt basic variables
-            for i, constr in enumerate(constraints_matrix):
-                if i == nonbasic_ind:
-                    continue
-                basic_coeff = constr[basic_ind]
-
-                # perform element wise math
-                for j in range(len(constr)):
-                    elem = constr[j]
-                    constr[j] = elem - basic_coeff * basic_row[j]
-
-                rhs[i] = rhs[i] - basic_coeff * rhs[nonbasic_ind]
 
         return ['5','9'], str(23)
+
+
+    '''
+    Given
+    nonbasic_ind: Index of the constraint containing the variable to be removed 
+                from basis
+    basic_ind: Index of the variable to be added to basis 
+    
+    will mutate constr matrix and RHS as per the new basic variable
+    '''
+    def compute_next_eqns(self, nonbasic_ind, basic_ind):
+        constr_matrix = self.constr_matrix
+        rhs = self.rhs
+
+        basic_row = constr_matrix[nonbasic_ind]
+        coeff = basic_row[basic_ind]
+
+        for i, elem in enumerate(basic_row):
+            basic_row[i] = elem / coeff
+
+        rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
+
+        for i, constr in enumerate(constr_matrix):
+            if i == nonbasic_ind:
+                continue
+            basic_coeff = constr[basic_ind]
+
+            for j in range(len(constr)):
+                elem = constr[j]
+                constr[j] = elem - basic_coeff * basic_row[j]
+
+            rhs[i] -= basic_coeff * rhs[nonbasic_ind]
 
 
     '''
