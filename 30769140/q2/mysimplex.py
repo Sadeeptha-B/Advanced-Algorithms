@@ -36,18 +36,18 @@ class TableauSimplex():
         basic_idx = [no_decisions + i for i in range(len(rhs))]
 
         while True:
-            # Index of variable to make a basic variable
+            # Index of variable to set as basic variable
             basic_ind = self.get_next_basic(basic_idx)
 
             if basic_ind is None: 
-                res, sum = self.get_outputs(no_decisions, basic_idx)
+                # Solution reached
                 break
 
             # Index of variable to make nonbasic
             nonbasic_ind = self.get_next_nonbasic(basic_ind)
             
             if nonbasic_ind is None:
-                # No solutions exist
+                # No solution exists beyond current optimization
                 break
 
             basic_idx[nonbasic_ind] = basic_ind 
@@ -55,8 +55,9 @@ class TableauSimplex():
             # Express all equations considering new basic variable
             self.compute_next_eqns(nonbasic_ind, basic_ind)
 
-
+        res, sum = self.get_outputs(no_decisions, basic_idx)
         return res, sum
+
 
     '''
     Return the index of the variable that should be the new incoming basic variable
@@ -68,14 +69,19 @@ class TableauSimplex():
 
         maximum, max_ind = float('-inf'), None
 
+        # Record non zero objective function variables in advance to remove redundant computation
+        nonzero_obj = []
+        for i, b_id in enumerate(basic_idx):
+            if obj_func[b_id] != 0:
+                nonzero_obj.append((i, b_id))
+
+
         for i in range(len(obj_func)):
-            constr_ptr = 0
             row_sum =  0
 
-            # Perform column-wise dot product
-            for b_id in basic_idx:
-                row_sum += obj_func[b_id] * constr_matrix[constr_ptr][i]
-                constr_ptr += 1
+            # Perform column-wise dot product of non zero coeff var in obj func
+            for j, b_id in nonzero_obj:
+                row_sum += obj_func[b_id] * constr_matrix[j][i]
 
             value = obj_func[i] - row_sum
 
@@ -87,6 +93,7 @@ class TableauSimplex():
             max_ind = None
 
         return max_ind
+
 
     '''
     Returns the index of the variable to be removed from the basis 
