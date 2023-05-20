@@ -12,10 +12,12 @@ OUTPUT_FILE = "lpsolution.txt"
 Implements the Tableau Simplex Algorithm to solve a linear problem of the standard
 form provided an objective function, constraint matrix and rhs values
 
-obj_func: List of size decision var + constraints. With slack variables as 0.0
-constr_matrix: List of no of constraints length containing lists of the obj func length,
+obj_func: List of size decision var + constraints. With slack variables as zeros
+constr_matrix: List of constraints length containing lists of the obj func length,
                each corresponding to a constraint
 rhs: List containing RHS values to the constraints
+
+All values should be provided as floats.
 '''
 
 class TableauSimplex():
@@ -37,8 +39,17 @@ class TableauSimplex():
             # Index of variable to make a basic variable
             basic_ind = self.get_next_basic(basic_idx)
 
-            if basic_ind is None:               
-                break
+            if basic_ind is None: 
+                res = [0] * no_decisions
+
+                for i, elem in enumerate(basic_idx):
+                    if elem < no_decisions:
+                        res[elem] = rhs[i]
+
+                sum = 0
+                for i in range(len(obj_func)):
+                    sum += obj_func[i] * res[i]
+
 
             # Index of variable to make nonbasic
             nonbasic_ind = self.get_next_nonbasic(basic_ind)
@@ -53,40 +64,7 @@ class TableauSimplex():
             self.compute_next_eqns(nonbasic_ind, basic_ind)
 
 
-        return ['5','9'], str(23)
-
-
-    '''
-    Given
-    nonbasic_ind: Index of the constraint containing the variable to be removed 
-                from basis
-    basic_ind: Index of the variable to be added to basis 
-    
-    will mutate constr matrix and RHS as per the new basic variable
-    '''
-    def compute_next_eqns(self, nonbasic_ind, basic_ind):
-        constr_matrix = self.constr_matrix
-        rhs = self.rhs
-
-        basic_row = constr_matrix[nonbasic_ind]
-        coeff = basic_row[basic_ind]
-
-        for i, elem in enumerate(basic_row):
-            basic_row[i] = elem / coeff
-
-        rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
-
-        for i, constr in enumerate(constr_matrix):
-            if i == nonbasic_ind:
-                continue
-            basic_coeff = constr[basic_ind]
-
-            for j in range(len(constr)):
-                elem = constr[j]
-                constr[j] = elem - basic_coeff * basic_row[j]
-
-            rhs[i] -= basic_coeff * rhs[nonbasic_ind]
-
+        return res, sum
 
     '''
     Return the index of the variable that should be the new incoming basic variable
@@ -101,6 +79,8 @@ class TableauSimplex():
         for i in range(len(obj_func)):
             constr_ptr = 0
             row_sum =  0
+
+            # Perform column-wise dot product
             for b_id in basic_idx:
                 row_sum += obj_func[b_id] * constr_matrix[constr_ptr][i]
                 constr_ptr += 1
@@ -140,6 +120,39 @@ class TableauSimplex():
 
         return min_ind
 
+
+    '''
+    Given
+    nonbasic_ind: Index of the constraint containing the variable to be removed 
+                from basis
+    basic_ind: Index of the variable to be added to basis 
+    
+    will mutate constr matrix and RHS as per the new basic variable
+    '''
+    def compute_next_eqns(self, nonbasic_ind, basic_ind):
+        constr_matrix = self.constr_matrix
+        rhs = self.rhs
+
+        # Row containing new basic variable
+        basic_row = constr_matrix[nonbasic_ind]
+        coeff = basic_row[basic_ind]
+
+        for i, elem in enumerate(basic_row):
+            basic_row[i] = elem / coeff
+
+        rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
+
+        # Mutate other constraints
+        for i, constr in enumerate(constr_matrix):
+            if i == nonbasic_ind:
+                continue
+            basic_coeff = constr[basic_ind]
+
+            for j in range(len(constr)):
+                elem = constr[j]
+                constr[j] = elem - basic_coeff * basic_row[j]
+
+            rhs[i] -= basic_coeff * rhs[nonbasic_ind]
 
 
 
