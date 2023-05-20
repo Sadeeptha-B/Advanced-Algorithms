@@ -15,36 +15,56 @@ form provided an objective function, constraint matrix and rhs values
 def tableau_simplex(obj_func, constraint_matrix, rhs):
     no_decisions = len(obj_func) - len(rhs)
 
-    # Indices of basic and non basic variables as per objective function
-    non_basic_idx = [i for i in range(no_decisions)]
+    # Indices of basic variables
     basic_idx = [no_decisions + i for i in range(len(rhs))]
 
-    # which variable index from obj func to swap in
 
     while True:
+        # Index of next basic variable (obj)
         basic_ind = get_next_basic(basic_idx, obj_func, constraint_matrix)
 
         if basic_ind is None:
             # Do needful to extract return value
             break
 
+        # Index of variable to fix (constr matrix)
         nonbasic_ind = get_next_non_basic(basic_ind, constraint_matrix, rhs)
 
         if nonbasic_ind is None:
             # No solutions exist
             break
 
-        
-        
-        pass
+        # put basic_ind at the index of basic_var being removed
+        basic_idx[nonbasic_ind] = basic_ind 
 
 
-    # Return decisions list and optimal value
+        # Divide entire row of new basic_ind and rhs
+        basic_row = constraint_matrix[nonbasic_ind]
+        coeff = basic_row[basic_ind]
+
+        for i, elem in enumerate(basic_row):
+            basic_row[i] = elem / coeff
+
+        rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
+
+
+        # Express all equations wrt basic variables
+        
+
+
+
+
     return ['5','9'], str(23)
 
 
-'''
 
+### Key point: Constraint rows must match up with corresponding basic variable
+'''
+Provided the objective function, indices of the basic variables as per the obj function, and the constraint matrix, will perform
+row wise dot product between basic variable coefficients in the objective function and the corresponding constraint matrix row.
+
+Will return the index correspdonding to the largest positive value in the modified obj function. If no positive value exists 
+returns None
 '''
 def get_next_basic(basic_idx, obj_func, constraint_matrix):
     maximum, max_ind = float('-inf'), None
@@ -52,8 +72,8 @@ def get_next_basic(basic_idx, obj_func, constraint_matrix):
     for i in range(len(obj_func)):
         constr_ptr = 0
         row_sum =  0
-        for idx in basic_idx:
-            row_sum += obj_func[idx] * constraint_matrix[constr_ptr][i]
+        for b_id in basic_idx:
+            row_sum += obj_func[b_id] * constraint_matrix[constr_ptr][i]
             constr_ptr += 1
 
         value = obj_func[i] - row_sum
@@ -68,6 +88,9 @@ def get_next_basic(basic_idx, obj_func, constraint_matrix):
     return max_ind
 
 
+'''
+
+'''
 def get_next_non_basic(basic_ind, constraint_matrix, rhs):
     minimum, min_ind = float('inf'), None
 
@@ -178,6 +201,7 @@ def write_output(decisions, optimal):
         
 
 if __name__ == "__main__":
+    # File containing linear program of the standard form
     _, filename = sys.argv
 
     # Read input 
