@@ -22,9 +22,29 @@ SECRET_FILE = "secretprimes.txt"
 #         - lambda is a complicated eq with p and q
 # write primes and public key to two files
 
+# n > 2
+def miller_rabin_primality(n, k):    
+    if n % 2 == 0:
+        return "Composite"
+    
+    s, t = 0, n-1
+
+    while t % 2 == 0:
+        s = s + 1
+        t = t / 2
+    
+    for _ in range(k):
+        # choose 
+        a = random.randint(2, n-2)
+        # Loop perfoming congruency check
+
+        # check congruency check at the end if not 1, composite
+
+
+    return "Probably prime"
 
 # I/O operations
-# ========================================================================
+# ==============================================================================
 
 def write_to_file(filename, headings, outputs):
     with open(filename, 'w') as file:
@@ -42,7 +62,7 @@ if __name__ == "__main__":
 
     # generate_primes()
     # compute_n()
-    # compute_d()
+    # compute_e()
 
     keyfile_headings = ["# modulus (n)\n", "\n# exponent (e)\n"]
     secretfile_headings = ["# p\n", "\n# q\n"]
