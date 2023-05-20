@@ -18,23 +18,17 @@ def tableau_simplex(obj_func, constraint_matrix, rhs):
     # Indices of basic variables
     basic_idx = [no_decisions + i for i in range(len(rhs))]
 
-
     while True:
-        print(constraint_matrix)
-        print(basic_idx)
-        print(rhs)
-        print("=======")
-
         # Index of next basic variable (obj)
         basic_ind = get_next_basic(basic_idx, obj_func, constraint_matrix)
-
+        print(basic_ind)
         if basic_ind is None:
             # Do needful to extract return value
             break
 
         # Index of variable to fix (constr matrix)
         nonbasic_ind = get_next_non_basic(basic_ind, constraint_matrix, rhs)
-
+        
         if nonbasic_ind is None:
             # No solutions exist
             break
@@ -59,15 +53,13 @@ def tableau_simplex(obj_func, constraint_matrix, rhs):
             basic_coeff = constr[basic_ind]
 
             # perform element wise math
-            for i in range(len(constr)):
-                elem = constr[i]
-                constr[i] = elem - basic_coeff * basic_row[i]
+            for j in range(len(constr)):
+                elem = constr[j]
+                constr[j] = elem - basic_coeff * basic_row[j]
 
             rhs[i] = rhs[i] - basic_coeff * rhs[nonbasic_ind]
 
-        
-
-
+     
     return ['5','9'], str(23)
 
 
@@ -96,7 +88,7 @@ def get_next_basic(basic_idx, obj_func, constraint_matrix):
             maximum = value
             max_ind = i
 
-    if maximum < 0:
+    if maximum <= 0:
         max_ind = None
 
     return max_ind
