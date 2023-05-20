@@ -20,6 +20,11 @@ def tableau_simplex(obj_func, constraint_matrix, rhs):
 
 
     while True:
+        print(constraint_matrix)
+        print(basic_idx)
+        print(rhs)
+        print("=======")
+
         # Index of next basic variable (obj)
         basic_ind = get_next_basic(basic_idx, obj_func, constraint_matrix)
 
@@ -47,11 +52,20 @@ def tableau_simplex(obj_func, constraint_matrix, rhs):
 
         rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
 
-
         # Express all equations wrt basic variables
+        for i, constr in enumerate(constraints_matrix):
+            if i == nonbasic_ind:
+                continue
+            basic_coeff = constr[basic_ind]
+
+            # perform element wise math
+            for i in range(len(constr)):
+                elem = constr[i]
+                constr[i] = elem - basic_coeff * basic_row[i]
+
+            rhs[i] = rhs[i] - basic_coeff * rhs[nonbasic_ind]
+
         
-
-
 
 
     return ['5','9'], str(23)
