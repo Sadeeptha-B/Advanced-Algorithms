@@ -40,16 +40,8 @@ class TableauSimplex():
             basic_ind = self.get_next_basic(basic_idx)
 
             if basic_ind is None: 
-                res = [0] * no_decisions
-
-                for i, elem in enumerate(basic_idx):
-                    if elem < no_decisions:
-                        res[elem] = rhs[i]
-
-                sum = 0
-                for i in range(len(obj_func)):
-                    sum += obj_func[i] * res[i]
-
+                res, sum = self.get_outputs(no_decisions, basic_idx)
+                break
 
             # Index of variable to make nonbasic
             nonbasic_ind = self.get_next_nonbasic(basic_ind)
@@ -155,6 +147,22 @@ class TableauSimplex():
             rhs[i] -= basic_coeff * rhs[nonbasic_ind]
 
 
+    '''
+    Provided the basic indices and the number of decision variables, will 
+    return a list of results and the sum
+    '''
+    def get_outputs(self, no_decisions, basic_idx):
+        res = [0] * no_decisions
+        
+        for i, elem in enumerate(basic_idx):
+            if elem < no_decisions:
+                res[elem] = self.rhs[i]
+
+        sum = 0
+        for i in range(len(res)):
+            sum += self.obj_func[i] * res[i]
+
+        return res, sum
 
 # I/O operations
 # ================================================================================
@@ -236,8 +244,10 @@ def get_padded_lst(st, size, pad=0.0):
   
         
 def write_output(decisions, optimal):
-    headings = ["# optimalDecisions\n", "\n# optimalObjective\n"]
-    outputs = [', '.join(decisions), optimal]
+    headings = ["# optimalDecisions\n", "\n# optimalObjective\n"]\
+
+    decisions = list(map(str, decisions))
+    outputs = [', '.join(decisions), str(optimal)]
 
     with open(OUTPUT_FILE, 'w') as file:
         for ind, heading in enumerate(headings):
@@ -255,7 +265,7 @@ if __name__ == "__main__":
 
     # Implement tableau simplex
     tb = TableauSimplex(obj_function, constraints_matrix, rhs_values)
-    decisions, optimial = tb.run()
+    decisions, optimal = tb.run()
 
     # # write to file
-    # write_output(decisions, optimal)
+    write_output(decisions, optimal)
