@@ -11,109 +11,124 @@ OUTPUT_FILE = "lpsolution.txt"
 '''
 Implements the Tableau Simplex Algorithm to solve a linear problem of the standard
 form provided an objective function, constraint matrix and rhs values
-'''
-def tableau_simplex(obj_func, constraint_matrix, rhs):
-    no_decisions = len(obj_func) - len(rhs)
 
-    # Indices of basic variables
-    basic_idx = [no_decisions + i for i in range(len(rhs))]
-
-    while True:
-        # Index of next basic variable (obj)
-        basic_ind = get_next_basic(basic_idx, obj_func, constraint_matrix)
-        print(basic_ind)
-        if basic_ind is None:
-            # Do needful to extract return value
-            break
-
-        # Index of variable to fix (constr matrix)
-        nonbasic_ind = get_next_non_basic(basic_ind, constraint_matrix, rhs)
-        
-        if nonbasic_ind is None:
-            # No solutions exist
-            break
-
-        # put basic_ind at the index of basic_var being removed
-        basic_idx[nonbasic_ind] = basic_ind 
-
-
-        # Divide entire row of new basic_ind and rhs
-        basic_row = constraint_matrix[nonbasic_ind]
-        coeff = basic_row[basic_ind]
-
-        for i, elem in enumerate(basic_row):
-            basic_row[i] = elem / coeff
-
-        rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
-
-        # Express all equations wrt basic variables
-        for i, constr in enumerate(constraints_matrix):
-            if i == nonbasic_ind:
-                continue
-            basic_coeff = constr[basic_ind]
-
-            # perform element wise math
-            for j in range(len(constr)):
-                elem = constr[j]
-                constr[j] = elem - basic_coeff * basic_row[j]
-
-            rhs[i] = rhs[i] - basic_coeff * rhs[nonbasic_ind]
-
-     
-    return ['5','9'], str(23)
-
-
-
-### Key point: Constraint rows must match up with corresponding basic variable
-'''
-Provided the objective function, indices of the basic variables as per the obj function, and the constraint matrix, will perform
-row wise dot product between basic variable coefficients in the objective function and the corresponding constraint matrix row.
-
-Will return the index correspdonding to the largest positive value in the modified obj function. If no positive value exists 
-returns None
-'''
-def get_next_basic(basic_idx, obj_func, constraint_matrix):
-    maximum, max_ind = float('-inf'), None
-
-    for i in range(len(obj_func)):
-        constr_ptr = 0
-        row_sum =  0
-        for b_id in basic_idx:
-            row_sum += obj_func[b_id] * constraint_matrix[constr_ptr][i]
-            constr_ptr += 1
-
-        value = obj_func[i] - row_sum
-
-        if value > maximum:
-            maximum = value
-            max_ind = i
-
-    if maximum <= 0:
-        max_ind = None
-
-    return max_ind
-
-
+obj_func: List of size decision var + constraints. With slack variables as 0.0
+constr_matrix: List of no of constraints length containing lists of the obj func length,
+               each corresponding to a constraint
+rhs: List containing RHS values to the constraints
 '''
 
-'''
-def get_next_non_basic(basic_ind, constraint_matrix, rhs):
-    minimum, min_ind = float('inf'), None
+class TableauSimplex():
+    def __init__(self, obj_func, constr_matrix, rhs) -> None:
+        self.obj_func = obj_func
+        self.constr_matrix = constr_matrix
+        self.rhs = rhs
 
-    for i, r_val in enumerate(rhs):
-        basic_coef = constraint_matrix[i][basic_ind]
 
-        # Divide by zero check
-        if basic_coef == 0:
-            continue 
+    def run(self):
+        # Initialization
+        obj_func = self.obj_func
+        constr_matrix = self.constr_matrix
+        rhs = self.rhs
+        no_decisions = len(obj_func) - len(rhs)
 
-        value = r_val / basic_coef
+        # Indices of basic variables
+        basic_idx = [no_decisions + i for i in range(len(rhs))]
 
-        if value < minimum and value > 0:
-            minimum = value
-            min_ind = i
+        while True:
+            basic_ind = self.get_next_basic(basic_idx)
 
-    return min_ind
+            if basic_ind is None:               
+                break
+
+            # Index of variable to fix (constr matrix)
+            nonbasic_ind = self.get_next_nonbasic(basic_ind)
+            
+            if nonbasic_ind is None:
+                # No solutions exist
+                break
+
+            # put basic_ind at the index of basic_var being removed
+            basic_idx[nonbasic_ind] = basic_ind 
+
+            # Divide entire row of new basic_ind and rhs
+            basic_row = constr_matrix[nonbasic_ind]
+            coeff = basic_row[basic_ind]
+
+            for i, elem in enumerate(basic_row):
+                basic_row[i] = elem / coeff
+
+            rhs[nonbasic_ind] = rhs[nonbasic_ind] / coeff
+
+            # Express all equations wrt basic variables
+            for i, constr in enumerate(constraints_matrix):
+                if i == nonbasic_ind:
+                    continue
+                basic_coeff = constr[basic_ind]
+
+                # perform element wise math
+                for j in range(len(constr)):
+                    elem = constr[j]
+                    constr[j] = elem - basic_coeff * basic_row[j]
+
+                rhs[i] = rhs[i] - basic_coeff * rhs[nonbasic_ind]
+
+        return ['5','9'], str(23)
+
+
+    '''
+    Return the index of the variable that should be the new incoming basic variable
+    (Index as per obj function)
+    '''
+    def get_next_basic(self, basic_idx):
+        obj_func = self.obj_func
+        constr_matrix = self.constr_matrix
+
+        maximum, max_ind = float('-inf'), None
+
+        for i in range(len(obj_func)):
+            constr_ptr = 0
+            row_sum =  0
+            for b_id in basic_idx:
+                row_sum += obj_func[b_id] * constr_matrix[constr_ptr][i]
+                constr_ptr += 1
+
+            value = obj_func[i] - row_sum
+
+            if value > maximum:
+                maximum = value
+                max_ind = i
+
+        if maximum <= 0:
+            max_ind = None
+
+        return max_ind
+
+    '''
+    Returns the index of the variable to be removed from the basis 
+    (Index as per constr matrix)
+    '''
+    def get_next_nonbasic(self, basic_ind):
+        constr_matrix = self.constr_matrix
+        rhs = self.rhs
+        minimum, min_ind = float('inf'), None
+
+        for i, r_val in enumerate(rhs):
+            basic_coef = constr_matrix[i][basic_ind]
+
+            # Divide by zero check
+            if basic_coef == 0:
+                continue 
+
+            value = r_val / basic_coef
+
+            if value < minimum and value > 0:
+                minimum = value
+                min_ind = i
+
+        return min_ind
+
+
 
 
 # I/O operations
@@ -211,10 +226,11 @@ if __name__ == "__main__":
     _, filename = sys.argv
 
     # Read input 
-    obj_function, constraints_matrix, rhs = read_preprocess(filename)
+    obj_function, constraints_matrix, rhs_values = read_preprocess(filename)
 
     # Implement tableau simplex
-    decisions,optimal = tableau_simplex(obj_function, constraints_matrix, rhs)
+    tb = TableauSimplex(obj_function, constraints_matrix, rhs_values)
+    decisions, optimial = tb.run()
 
     # # write to file
     # write_output(decisions, optimal)
