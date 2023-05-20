@@ -1,0 +1,85 @@
+Question 1: Suffix Array construction
+------------------------------------------------------------------
+- Output: 2/2.0
+
+**Space Saving**
+- Edge labels implemented as <sp,ep>: 0.25/0.25
+
+**Suffix Tree Construction**
+- Transitioning from extn j  --> j+1  of phase i: 1.5/1.5
+- Transitioning from phase i --> i+1: 0.5/0.5
+- Rule 1: 0.5/0.5
+- Rule 2: 1/1.0
+- Rule 3: 0.25/0.25
+
+- Suffix tree construction total mark 4/4.0
+
+**Suffix Array Construction**
+- Traversal is recursive: 1.5/1.5
+- Traversal is lexicographical: 0.5/0.5
+
+Q1 Total: : 8/8.0
+
+Question 1 Feedback: 
+Great work on successfully passing all the test cases and providing a well-written and efficient scri
+pt.
+
+
+==================================================================
+
+Question 2: Burros Wheeler Tansform (BWT)
+------------------------------------------------------------------
+
+**Encoder**
+- Output: 1/1.0
+
+**Penalties**
+- Wrong implementation of Elias encoding: 0/-0.5
+- Wrong implementation of Huffman encodinge: 0.25/-0.5
+- Writing to file as character strings: 0/-1.0
+- Holding all bits in moemory before packing: 0/-0.25
+
+------------------------------------------------------------------
+
+**Decoder**
+- Output: 1/1.0
+
+**Penalties**
+- Unpacking all bits before decoding: 0/-0.25
+- Major implementational errors in decoding header: 0/-0.5
+- Major implementational errors in decoding data: 0/-0.5
+- Not using LF-mapping to invert BWT: 0/-0.5
+
+Q2 Total: : 7.75/8.0
+
+Question 2 Feedback: 
+Excellent job on passing all the test cases! However, there are one minor issues with your implementa
+tion that need improvement:
+
+
+Encoder:
+ - Minor error in DATA PART encoder. Epecifically, in line 209, it skips the lase codeword in some te
+st cases (i.e., ). You can fix this by editing the condition in line 209 such "while count + ind < le
+n(st) and st[ind] == st[ind+count]:" (-0.25 marks)
+
+
+==================================================================
+
+Question 3: Elias code (Prefix free proof)
+------------------------------------------------------------------
+Q3 Total: 4/4.0
+
+Question 3 Feedback: 
+Excellent job! I truly value your diligence in creating a detailed and thorough report. Your use of a
+ proof by contradiction, along with mathematical equations, was remarkable and showcased your experti
+se in the field. Keep up the exceptional work!
+
+==================================================================
+
+Late Submission Penalty: -0
+Overall Penalties: -
+------------------------------------------------------------------
+Overall Mark: 19.75/20
+==================================================================
+==================================================================
+
