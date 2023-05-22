@@ -43,6 +43,17 @@ def miller_rabin_primality(n, k):
 
     return "Probably prime"
 
+'''
+Euclid's algorithm to compute gcd. Performs mod operation till
+b becomes zero.
+'''
+def compute_gcd(a,b):
+    if b == 0:
+        return a
+    
+    return compute_gcd(b, a % b)
+    
+
 # I/O operations
 # ==============================================================================
 
