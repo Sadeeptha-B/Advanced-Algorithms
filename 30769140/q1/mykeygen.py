@@ -23,24 +23,34 @@ SECRET_FILE = "secretprimes.txt"
 #         - lambda is a complicated eq with p and q
 # write primes and public key to two files
 
+
+'''
+Returns the two smallest prime integers of the form 
+2^x - 1 where x >= d
+'''
 def select_primes(d):
     count = 0
-    num = (1 << d) - 1
+    num = (1 << d) - 1  # 2^x - 1 (x=d)
     res = []
 
     while count < 2:
-        if is_prime(num):
+        if miller_rabin_primality(num):
             count += 1
             res.append(num)
-        num = 2 * num + 1
+        num = (num << 1) + 1  # 2^(x+1) - 1 
 
     return res[0], res[1]
 
 
 # n > 2
 def miller_rabin_primality(n, k):    
+    # Special cases
+    if n == 2 or n == 3:
+        return True
+    
+    # All even numbers can be returned as non-prime
     if n % 2 == 0:
-        return "Composite"
+        return False
     
     s, t = 0, n-1
 
@@ -56,7 +66,27 @@ def miller_rabin_primality(n, k):
         # check congruency check at the end if not 1, composite
 
 
-    return "Probably prime"
+    return True
+
+'''
+n is the product of p and q
+'''
+def compute_n(p, q):
+    return p * q
+
+'''
+e is a random integer in the range [3, lambda -1] where 
+lambda is 
+'''
+def compute_e(p, q):
+    lda = (p-1)* (q-1)/compute_gcd(p-1, q-1)
+
+    # check the gcd(e, lambda) condition
+    e = random.randint(3, lda -1)
+    print(compute_gcd(e, lda))
+
+    return e
+
 
 '''
 Euclid's algorithm to compute gcd. Performs mod operation till
@@ -86,14 +116,21 @@ if __name__ == "__main__":
     if not d.isdigit():
         raise ValueError('d must be an integer')
 
-    # generate_primes()
-    # compute_n()
-    # compute_e()
+    if int(d) <= 2:
+        raise ValueError('d must be larger than 2')
+    
+    # Select primes of specified form
+    p, q = select_primes(d)
 
+    # Compute n and e public keys
+    n, e = compute_n(p, q), compute_e(p, q)
+
+
+    # Write to files
     keyfile_headings = ["# modulus (n)\n", "\n# exponent (e)\n"]
     secretfile_headings = ["# p\n", "\n# q\n"]
 
-    write_to_file(KEY_FILE, keyfile_headings, [1073602561, 3187811])
-    write_to_file(SECRET_FILE, secretfile_headings, [8191, 131071])
+    write_to_file(KEY_FILE, keyfile_headings, [n, e])
+    write_to_file(SECRET_FILE, secretfile_headings, [p, q])
 
 
