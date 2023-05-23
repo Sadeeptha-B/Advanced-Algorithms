@@ -2,6 +2,7 @@
 Author: Sadeeptha Bandara
 Student ID: 30769140
 '''
+
 import sys
 import random
 
@@ -21,6 +22,20 @@ SECRET_FILE = "secretprimes.txt"
 #         - e:randomly chosen in the range [3, lambda - 1] such that gcd(e, lambda) = 1
 #         - lambda is a complicated eq with p and q
 # write primes and public key to two files
+
+def select_primes(d):
+    count = 0
+    num = (1 << d) - 1
+    res = []
+
+    while count < 2:
+        if is_prime(num):
+            count += 1
+            res.append(num)
+        num = 2 * num + 1
+
+    return res[0], res[1]
+
 
 # n > 2
 def miller_rabin_primality(n, k):    
