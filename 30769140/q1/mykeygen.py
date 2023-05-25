@@ -1,29 +1,22 @@
 '''
 Author: Sadeeptha Bandara
 Student ID: 30769140
+
+Notes:
+1. The number of tests for Miller Rabin primality is chosen to be floor(ln(n) + 1)
+- This choice was made since the probability of a chosen n being prime can be approximated
+  to 1/ln(n) for large n
+
+2. Modular exponentiation is performed inline within a particular fermat test in miller rabin
+
 '''
 
 import sys
 import random
 from math import log
 
-
 KEY_FILE = "publickeyinfo.txt"
 SECRET_FILE = "secretprimes.txt"
-
-# Publicly you share n and e
-# n and e is generated with two secret prime numbers
-
-
-# Task: 
-# Select two appropriate primes
-#         - p and q are the smallest prime integers of the form 2^x - 1 where x >= d
-#         - 2000 >= d > 2 is an input integer 
-# Generate n and e from it
-#         - n: p * q
-#         - e:randomly chosen in the range [3, lambda - 1] such that gcd(e, lambda) = 1
-#         - lambda is a complicated eq with p and q
-# write primes and public key to two files
 
 
 '''
@@ -31,25 +24,24 @@ Returns the two smallest prime integers of the form 2^x - 1
 where x >= d is a positive integer
 '''
 def select_primes(d):
-    count = 0
     num = (1 << d) - 1  # 2^x - 1 (x=d)
     res = []
 
-    while count < 2:
+    while len(res) < 2:
         confidence = int(log(num) + 1) # Natural logarithm
-
+        
         if miller_rabin_primality(num, confidence):
-            count += 1
+
             res.append(num)
 
-        num = (num << 1) + 1  # 2^(x+1) - 1 = 2(2^x-1) + 1
+        num = 2 * num + 1  # 2^(x+1) - 1 = 2(2^x-1) + 1
 
     return res[0], res[1]
 
 
 '''
 Performs the fermat test of the form
-         a^(n-1) congruent to 1 of congruence class modulo n
+        do a^(n-1) and 1 belong to the same congruence class of modulo n ?
 multiple times in performing the miller rabin test
 
 num :- Number to test primality
@@ -83,22 +75,18 @@ def miller_rabin_primality(num, tests):
     # Perform fermat's test multiple times
     for _ in range(tests):
         
-        a = random.randint(2, num - 2)
+        a = random.randint(2, num-2)
         previous = num -1
         current = (a ** t) % num   # Mod exp starting term
 
         for _ in range(s+1):
 
             # Check for first occurence of mod exp becoming 1
-            # If primality test succeeds, breaks loop 
-            # If it fails terminates and returns False
             if current == 1:
-                if previous != num -1:
+                if previous != num-1:
                     return False
                 else:
                     break
-
-            print(current, )
 
             previous = current
             current = (current ** 2) % num   # Repeated squaring
@@ -153,29 +141,20 @@ if __name__ == "__main__":
     if not d.isdigit():
         raise ValueError('d must be an integer')
 
-    if int(d) <= 2:
+    d = int(d)
+    if d <= 2:
         raise ValueError('d must be larger than 2')
-    
-   
-    nums = [561, 1105, 1729, 2465, 2821, 6601, 8911, 10585, 15841, 29341, 41041, 46657, 52633, 62745, 63973, 75361, 101101, 115921, 126217, 162401, 172081, 188461, 252601, 278545, 294409, 314821, 334153]
-    for num in nums:
-        tests = int(log(num) + 1)
-        print(num, tests)
-        print(miller_rabin_primality(num, int(log(num)+1)))
-        print("======")
-
-    print(miller_rabin_primality(1, int(log(1) + 1)))
 
     # Select primes of specified form
-    # p, q = select_primes(d)
+    p, q = select_primes(d)
+    print(p,q)
 
-    # # Compute n and e public keys
-    # n, e = compute_n(p, q), compute_e(p, q)
+    # Compute n and e public keys
+    n, e = compute_n(p, q), compute_e(p, q)
 
-
-    # # Write to files
-    # keyfile_headings = ["# modulus (n)\n", "\n# exponent (e)\n"]
-    # secretfile_headings = ["# p\n", "\n# q\n"]
+    # Write to files
+    keyfile_headings = ["# modulus (n)\n", "\n# exponent (e)\n"]
+    secretfile_headings = ["# p\n", "\n# q\n"]
 
     # write_to_file(KEY_FILE, keyfile_headings, [n, e])
     # write_to_file(SECRET_FILE, secretfile_headings, [p, q])
