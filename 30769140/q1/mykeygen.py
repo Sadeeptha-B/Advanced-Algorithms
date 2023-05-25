@@ -49,9 +49,10 @@ lambda is (p-1) * (q-1) / gcd(p-1, q-1)
 def compute_e(p, q):
     lda = (p-1)* (q-1)/compute_gcd(p-1, q-1)
 
-    # check the gcd(e, lambda) condition
-    e = random.randint(3, lda -1)
-    print(compute_gcd(e, lda))
+    while True:
+        e = random.randint(3, lda-1)
+        if compute_gcd(e, lda) == 1:
+            break
 
     return e
 
@@ -85,7 +86,7 @@ def miller_rabin_primality(num, tests):
 
     while t % 2 == 0:
         s = s + 1
-        t = t / 2
+        t = t // 2
     
     t = int(t)
 
@@ -128,11 +129,13 @@ def mod_exp(base, exp, div):
     res= 1
 
     for i in range(exp.bit_length()):
+        # Keeping track of result
         if i == exp_places[sig_ptr]:
             res = (res * term) % div
             sig_ptr += 1
 
-        term = (term ** 2) % div
+        # Repeated squaring
+        term = (term ** 2) % div   
 
     return res
 
@@ -195,7 +198,6 @@ if __name__ == "__main__":
 
     # Select primes of specified form
     p, q = select_primes(d)
-    print(p,q)
 
     # Compute n and e public keys
     n, e = compute_n(p, q), compute_e(p, q)
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     keyfile_headings = ["# modulus (n)\n", "\n# exponent (e)\n"]
     secretfile_headings = ["# p\n", "\n# q\n"]
 
-    # write_to_file(KEY_FILE, keyfile_headings, [n, e])
-    # write_to_file(SECRET_FILE, secretfile_headings, [p, q])
+    write_to_file(KEY_FILE, keyfile_headings, [n, e])
+    write_to_file(SECRET_FILE, secretfile_headings, [p, q])
 
 

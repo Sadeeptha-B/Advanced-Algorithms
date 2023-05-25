@@ -1,0 +1,4 @@
+# optimalDecisions
+18.0, 12.0
+# optimalObjective
+72.0

@@ -38,7 +38,7 @@ def miller_rabin_primality(num, tests):
         print(f"Test {i+1}, a={a} :")
         
         previous = num -1
-        current = (a ** t) % num   # Mod exp starting term
+        current = mod_exp(a, t, num)  # Mod exp starting term
 
         for _ in range(s):
             print(current)
@@ -105,12 +105,12 @@ def get_sig_places(num):
     
 
 if __name__ == "__main__":
-    # num = 1023
-    # confidence = int(log(num) + 1)
-    # print("Miller rabin test")
-    # print(num, confidence)
-    # print("===================")
+    num = 1023
+    confidence = int(log(num) + 1)
+    print("Miller rabin test")
+    print(num, confidence)
+    print("===================")
 
-    # print(miller_rabin_primality(num, confidence))
+    print(miller_rabin_primality(num, confidence))
 
-    print(mod_exp(7, 560, 561))
+    # print(mod_exp(7, 560, 561))

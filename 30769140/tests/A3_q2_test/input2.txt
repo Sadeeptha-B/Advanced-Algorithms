@@ -1,0 +1,12 @@
+# numDecisionVariables
+2
+# numConstraints
+2
+#objective
+5, 4
+# constraintsLHSMatrix
+4, 1
+2, 3
+# constraintsRHSVector
+40
+90
