@@ -3,18 +3,15 @@ Author: Sadeeptha Bandara
 Student ID: 30769140
 
 Notes:
-1. The number of tests for Miller Rabin primality is chosen to be floor(ln(n) + 1)
+- The number of tests for Miller Rabin primality is chosen to be floor(ln(n) + 1)
 - This choice was made since the probability of a chosen n being prime can be approximated
   to 1/ln(n) for large n
-
-2. Modular exponentiation is performed inline within a particular fermat test in miller rabin
-
 '''
+
 
 import sys
 import random
 from math import log
-
 KEY_FILE = "publickeyinfo.txt"
 SECRET_FILE = "secretprimes.txt"
 
@@ -31,12 +28,32 @@ def select_primes(d):
         confidence = int(log(num) + 1) # Natural logarithm
         
         if miller_rabin_primality(num, confidence):
-
             res.append(num)
 
         num = 2 * num + 1  # 2^(x+1) - 1 = 2(2^x-1) + 1
 
     return res[0], res[1]
+
+
+'''
+n is the product of p and q
+'''
+def compute_n(p, q):
+    return p * q
+
+
+'''
+e is a random integer in the range [3, lambda -1] where 
+lambda is (p-1) * (q-1) / gcd(p-1, q-1)
+'''
+def compute_e(p, q):
+    lda = (p-1)* (q-1)/compute_gcd(p-1, q-1)
+
+    # check the gcd(e, lambda) condition
+    e = random.randint(3, lda -1)
+    print(compute_gcd(e, lda))
+
+    return e
 
 
 '''
@@ -77,9 +94,9 @@ def miller_rabin_primality(num, tests):
         
         a = random.randint(2, num-2)
         previous = num -1
-        current = (a ** t) % num   # Mod exp starting term
+        current = mod_exp(a, t, num) # Mod exp starting term
 
-        for _ in range(s+1):
+        for _ in range(s):
 
             # Check for first occurence of mod exp becoming 1
             if current == 1:
@@ -91,26 +108,33 @@ def miller_rabin_primality(num, tests):
             previous = current
             current = (current ** 2) % num   # Repeated squaring
 
+        # Check fermat's theorem case
+        if current != 1 or (current == 1 and previous != num-1):
+            return False
+
     return True
 
-'''
-n is the product of p and q
-'''
-def compute_n(p, q):
-    return p * q
 
 '''
-e is a random integer in the range [3, lambda -1] where 
-lambda is (p-1) * (q-1) / gcd(p-1, q-1)
+Implements modular exponentiation
 '''
-def compute_e(p, q):
-    lda = (p-1)* (q-1)/compute_gcd(p-1, q-1)
+def mod_exp(base, exp, div):
+     # Indices of significant bits in exp
+    exp_places = get_sig_places(exp) 
+    
+    # Initialized variables for loop
+    term = base % div
+    sig_ptr = 0
+    res= 1
 
-    # check the gcd(e, lambda) condition
-    e = random.randint(3, lda -1)
-    print(compute_gcd(e, lda))
+    for i in range(exp.bit_length()):
+        if i == exp_places[sig_ptr]:
+            res = (res * term) % div
+            sig_ptr += 1
 
-    return e
+        term = (term ** 2) % div
+
+    return res
 
 
 '''
@@ -123,6 +147,30 @@ def compute_gcd(a,b):
     
     return compute_gcd(b, a % b)
     
+
+
+# Helper methods 
+# =============================================================================
+
+'''
+Extracts bit by bit from a provided number left to right and then returns
+indices of significant bits (bits with value of 1)
+'''
+def get_sig_places(num):
+    bitlen = num.bit_length()
+    sig_places = []
+
+    for i in range(bitlen):
+        bit = num % 2
+
+        if bit == 1:
+            sig_places.append(i)
+
+        num = num >> 1
+
+    return sig_places
+
+
 
 # I/O operations
 # ==============================================================================
