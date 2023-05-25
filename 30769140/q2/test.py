@@ -19,7 +19,7 @@ if __name__ == "__main__":
         outputs.append(get_outputs(file))
 
     print("Outputs read complete")
-    print(outputs)
+    # print(outputs)
     
     input_files = [f'../tests/A3_q2_test/input{i+1}.txt' for i in range(5)]
 
@@ -30,9 +30,9 @@ if __name__ == "__main__":
 
         if outputs[i] != (decisions, optimal):
             print(f"Fail: file{i+1}")
-        else:
-            print(decisions, optimal)
-            print("========")
+        # else:
+        #     print(decisions, optimal)
+        #     print("========")
 
 
     print("Success")

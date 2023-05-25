@@ -47,7 +47,9 @@ e is a random integer in the range [3, lambda -1] where
 lambda is (p-1) * (q-1) / gcd(p-1, q-1)
 '''
 def compute_e(p, q):
-    lda = (p-1)* (q-1)/compute_gcd(p-1, q-1)
+    # Using integer division to avoid returning float, since the result is 
+    # a guaranteed integer
+    lda = (p-1)* (q-1) // compute_gcd(p-1, q-1)
 
     while True:
         e = random.randint(3, lda-1)
@@ -86,9 +88,7 @@ def miller_rabin_primality(num, tests):
 
     while t % 2 == 0:
         s = s + 1
-        t = t // 2
-    
-    t = int(t)
+        t = t // 2   # Integer division to avoid overflow
 
     # Perform fermat's test multiple times
     for _ in range(tests):
@@ -101,10 +101,7 @@ def miller_rabin_primality(num, tests):
 
             # Check for first occurence of mod exp becoming 1
             if current == 1:
-                if previous != num-1:
-                    return False
-                else:
-                    break
+                break
 
             previous = current
             current = (current ** 2) % num   # Repeated squaring
