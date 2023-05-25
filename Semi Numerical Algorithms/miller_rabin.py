@@ -30,15 +30,17 @@ def miller_rabin_primality(num, tests):
         t = t / 2
     
     t = int(t)
+    print(f"s: {s}, t: {t}")
 
     # Perform fermat's test multiple times
     for i in range(tests):
-        print(f"Test {i+1}")
         a = random.randint(2, num-2)
+        print(f"Test {i+1}, a={a} :")
+        
         previous = num -1
         current = (a ** t) % num   # Mod exp starting term
 
-        for _ in range(s+1):
+        for _ in range(s):
             print(current)
             # Check for first occurence of mod exp becoming 1
             if current == 1:
@@ -50,6 +52,9 @@ def miller_rabin_primality(num, tests):
             previous = current
             current = (current ** 2) % num   # Repeated squaring
         print('---------')
+
+        if current != 1 or (current == 1 and previous != num-1):
+            return False
 
     return True
 
