@@ -25,7 +25,7 @@ def select_primes(d):
     res = []
 
     while len(res) < 2:
-        confidence = int(log(num) + 1) # Natural logarithm
+        confidence = int(log(num)) + 1 # Natural logarithm
         
         if miller_rabin_primality(num, confidence):
             res.append(num)
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     # Select primes of specified form
     p, q = select_primes(d)
 
-    # Compute n and e public keys
+    # Compute n and e public key components
     n, e = compute_n(p, q), compute_e(p, q)
 
     # Write to files
