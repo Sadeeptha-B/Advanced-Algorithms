@@ -228,11 +228,13 @@ def read_preprocess(filename):
 
 
 '''
-Given a numerical string, will return a list of the specified size with the 
-numbers converted to floats. If the specified size is larger than the length 
-of the string will pad with the padding character
+Given a numerical string, will return a list with the numbers converted to floats. 
+- If the specified size is larger than the length of the string will pad with 
+the padding character.
+- If the specified size is smaller than or equal to the length of the string,
+then will return a list the size of the string
 '''
-def get_padded_lst(st, size, pad=0.0):
+def get_padded_lst(st, size=0, pad=0.0):
     if st[0] == "#":
         raise ValueError('Expected numerical string')
     

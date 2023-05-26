@@ -16,7 +16,10 @@ if __name__ == "__main__":
     output_files = [f'../tests/A3_q2_test/lpsolution{i+1}.txt' for i in range(5)]
 
     for file in output_files:
-        outputs.append(get_outputs(file))
+        output = get_outputs(file)
+        outputs.append(output)
+        print(output)
+        print('--------')
 
     print("Outputs read complete")
     # print(outputs)
@@ -27,6 +30,7 @@ if __name__ == "__main__":
         obj, constr, rhs = read_preprocess(file)
         tb = TableauSimplex(obj, constr, rhs)
         decisions, optimal = tb.run()
+        print(decisions, optimal)
 
         if outputs[i] != (decisions, optimal):
             print(f"Fail: file{i+1}")
