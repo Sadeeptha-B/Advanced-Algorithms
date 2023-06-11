@@ -1,0 +1,56 @@
+Question 1: Generating a public key
+------------------------------------------------------------------
+- Output: 1/1.0
+
+**Modular Exponentiation**
+- Correct implementation of repeated squaring: 0.5/0.5
+- mod n results are steadily accumulated for set bits in < O(log_2 n): 0.5/0.5
+
+**Miller-Rabin Implementation**
+- Decomposition into 2^s.t: 0.5/0.5
+- Computing X_0 using modular exp  and X_1, ..., X_s using repeated squaring: 0.5/0.5
+- Correctly applying observation 2: 0.5/0.5
+- Handling all possible cases of returns of X_0,....X_s sequence: 0.5/0.5
+
+**Generating e and n**
+- Correct set up to identify p, q, n: 0.5/0.5
+- Correct set up to identify lambda: 0.25/0.25
+- Correct set up to generate e (coprime with lambda): 0.25/0.25
+
+Q1 Total: : 5/5.0
+
+Question 1 Feedback: 
+Great job! Your implementation successfully passes all test cases. However, there are a couple of are
+as that require attention. Firstly, the main code lacks the functionality to write output values to f
+iles. Secondly, the writing functions do not precisely adhere to the output structure specified in th
+e assignment sheet example. Please ensure to address these aspects for a complete and accurate implem
+entation.
+
+
+==================================================================
+
+Question 2: Implementing Tableau Simplex
+------------------------------------------------------------------
+- Output: 1/1.0
+
+- Computing Cj - Zj row correctly:  1/1.0
+- Picking non-basic variable correctly to enter the basis: 0.25/0.25
+- Computing theta column correctly: 0.25/0.25
+- Picking basic variable exiting the basis correctly: 0.25/0.25
+- Updating the entering variable row correctly: 0.25/0.25
+- Updating other rows correctly: 1/1.0
+- Termination condition is correct: 1/1.0
+
+Q2 Total: : 5/5.0
+
+Question 2 Feedback: 
+Good work! It passes all test cases. I really appreciate your script documentation. 
+
+==================================================================
+
+Late Submission Penalty: -0
+Overall Penalties: -0
+------------------------------------------------------------------
+Overall Mark: 10/10
+==================================================================
+
