@@ -1,0 +1,21 @@
+Z-Algorithm Implementation 
+** Case 1: 0.5/0.5 
+Case 2a: 0.5/0.5 
+Case 2b: 1/1 
+Z-Algorithm Total: 2/2 
+** Question 1: Transposition Error Matching with Z-Algorithm ** 
+Output: 1/1 
+Approach: 3/3 
+Feedback: Well done. The implementation passes all test cases 
+Q1 Total: 4/4 
+
+** Question 2: Wildcard Matching with Boyer-Moore ** 
+Output: 0/1 
+Approach: 1/3 
+Feedback: You've put in an enormous amount of effort to tackle this task, and I appreciate the comprehensive and well-documented script that you've created. 
+However, your approach encountered some minor errors during evaluation, causing it to fail to generate the required output for both test cases. 
+For instance, on line 162, wc_gap becomes negative for some test cases, leading to an "out of index" error in line 184. 
+Additionally, your implementation does not seem to produce the correct output for the example provided in the assignment sheet. 
+You're on the right track to solving this task correctly, as I can see that you've implemented Boyer-Moore algorithm with Galil's optimizations. 
+However, your current implementation requires further tweaking and debugging to function correctly for pattern matching with a wildcard. 
+Q1 Total: 1/4 Late Submission Penalty: -0 Overall Penalties: -0 Overall Mark: 7/10
