@@ -1,12 +1,13 @@
 '''
 Author: Sadeeptha Bandara
 '''
-from typing import List, Tuple, Optional, Type
+from typing import List, Tuple, Optional,  Any
 
 
 # Custom types
 Key = int
-Vertices = List[Key]
+Prop = Any
+Vertices = List[Tuple[Key, Prop]]
 Edges = List[Tuple[Key, Key]]
 
 
@@ -18,13 +19,14 @@ class Graph:
     # O(E)
     def __init__(self, vertex_keys: Vertices, edge_tuples: Edges) -> None:
 
-        # If supporting non-int keys will need to modify, or if dealing with a lot
-        # of vertices
-        self.vertices: List[Optional[Vertex]] = [None] * (max(vertex_keys)+1)
+        # If supporting non-int keys will need to modify
+
+        max_key = max(vertex_keys, key=lambda elem:elem[0])[0]
+        self.vertices: List[Optional[Vertex]] = [None] * (max_key+1)
         
         # Set vertices
-        for key in vertex_keys:
-            self.vertices[key] = Vertex(key)
+        for key, prop in vertex_keys:
+            self.vertices[key] = Vertex(key, prop)
 
 
         # Set edges
@@ -35,7 +37,10 @@ class Graph:
             u.add_edge(Edge(u, v))
             v.add_edge(Edge(v, u))
 
-
+    '''
+    Convenience function to find a vertex. Abstracted to allow easy modification
+    for alternative self.vertices implementation
+    '''
     def find_vertex(self, key:Key) -> 'Vertex':
         try:
             vertex = self.vertices[key]
@@ -45,13 +50,17 @@ class Graph:
             return vertex
         
     # O(V+E)
-    def bfs(self, key:Key)-> List[Key]:
+    '''
+    Breadth first search
+    Provide key of starting node
+    '''
+    def bfs(self, key:Key)-> List[Prop]:
         discovered = []
         res = []
 
         u = self.find_vertex(key)
         discovered.append(u)
-        res.append(u.get_key())
+        res.append(u.get_property())
         u.discovered = True
 
         while len(discovered) > 0:
@@ -59,7 +68,7 @@ class Graph:
                 v = edge.v
                 if not v.discovered:
                     discovered.append(v)
-                    res.append(v.get_key())
+                    res.append(v.get_property())
                     v.discovered = True
 
             u = discovered.pop(0) # Linked list implmt O(1)
@@ -67,7 +76,9 @@ class Graph:
         self.reset()
         return res
 
-
+    '''
+    Reset vertex marking 
+    '''
     def reset(self):
         for vertex in self.vertices:
             if vertex is None:
@@ -76,6 +87,10 @@ class Graph:
             vertex.reset()
 
 
+    '''
+    Depth first search
+    Provide key of starting node
+    '''
     def dfs(self, k: Key)-> List[Key]:
         res = []
         u = self.find_vertex(k)
@@ -86,7 +101,7 @@ class Graph:
         
 
     def __dfs_aux(self, u:'Vertex', res:List[Key])-> None:
-        res.append(u.get_key())
+        res.append(u.get_property())
         u.visited = True
 
         for edge in u.get_edges():
@@ -95,13 +110,17 @@ class Graph:
                 self.__dfs_aux(v, res)
 
 
+    def dijsktra(self, k:Key)-> List[Key]:
+        pass
+
 
 '''
 Vertex key must be unique
 '''
 class Vertex:
-    def __init__(self, key:Key) -> None:
+    def __init__(self, key:Key, prop: Prop) -> None:
         self.__key = key
+        self.__prop = prop
         self.__edges: List[Edge] = []
         self.discovered:bool = False
         self.visited:bool = False
@@ -122,6 +141,9 @@ class Vertex:
     def get_key(self)-> Key:
         return Key(self.__key)
     
+    def get_property(self) -> Prop:
+        return self.__prop
+    
 
 class Edge:
      def __init__(self,u:Vertex, v:Vertex, w: Optional[int]=None) -> None:
@@ -131,13 +153,14 @@ class Edge:
     
 
 
+
 if __name__ == "__main__":
-    vertex_values:Vertices = [1,2,3,4,5,6]
-
-    #Undirected
-    edge_tuples:Edges = [(1,5), (1,2), (2,5), (2,3), (3,4), (4,5), (4,6)]
-
-    graph = Graph(vertex_values, edge_tuples)
+    
+    # Undirected_edges
+    test_vertices:List[Vertices] = [[(1,1),(2,2),(3,3),(4,4),(5,5),(6,6)],  [(1,2), (2,7), (3,5), (4, 2), (5,10), (6, 6), (7, 9), (8, 5), (9, 11), (10, 4)]]
+    test_edges:List[Edges]= [[(1,5), (1,2), (2,5), (2,3), (3,4), (4,5), (4,6)], [(1,2), (1,3), (2,4), (2,5), (2, 6), (3,7), (6, 8), (6, 9), (7, 10)]]
+   
+    graph = Graph(test_vertices[1], test_edges[1])
     print(graph.bfs(1))
     print(graph.dfs(1))
 
