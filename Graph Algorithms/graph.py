@@ -8,8 +8,9 @@ import heapq
 Key = int
 Prop = Any
 Weight = float 
-Vertices = List[Prop]
-Edges = List[Tuple[Key, Key]] | List[Tuple[Key, Key, Weight]] 
+Distance = Weight
+Vertex_Input = List[Prop]
+Edge_Input = List[Tuple[Key, Key]] | List[Tuple[Key, Key, Weight]] 
 
 
 '''
@@ -18,7 +19,7 @@ Graph class with bfs, dfs, shortest distance implementations
 class Graph:
     # Adjacency list representation
     # O(E)
-    def __init__(self, vertices: Vertices, edge_tuples: Edges) -> None:
+    def __init__(self, vertices: Vertex_Input, edge_tuples: Edge_Input) -> None:
 
         # If supporting non-int keys will need to modify
         self.vertices: List[Optional[Vertex]] = [None] * (len(vertices) + 1)
@@ -118,10 +119,21 @@ class Graph:
     o(v* heap serve + e * heap update)
     Requires to maintain priority queue to find shortest path
     Adding types made this seem more complicated than it is
+
+
+    Returns three return values
+    1.Shortest distance to sink from source
+    2. The shortest path from source to sink backwards
+    3. The distances thus far finalized till sink is reached
+
+    If sink is not reached,
+    1. Infinity
+    2. Empty since no path exists
+    3. Distances computed from source
     '''
     def dijsktra(self, src_key:Key, sink_key:Key):
-        discovered: List[Tuple(Weight, Key)] = []   # Priority queue to serve nearest vertex
-        distances:List[Key,Prop, Weight] = []  # Distances of finalized vertices
+        discovered: List[Tuple(Distance, Key)] = []   # Priority queue to serve nearest vertex
+        distances:List[Tuple(Key,Prop, Distance)] = []  # Distances of finalized vertices
 
         # Init
         src = self.find_vertex(src_key)
@@ -161,7 +173,7 @@ class Graph:
                     if v.distance > new_dist:
                         # Update value on heap
                         ind = discovered.index((v.distance, v.get_key()))     
-                        discovered.pop(ind)
+                        discovered.pop(ind)   #Potentially O(n), but can be O(logn) if implemented efficiently
                         heapq.heappush(discovered, (new_dist, v.get_key()))
 
                         v.distance = new_dist
@@ -233,13 +245,13 @@ if __name__ == "__main__":
     
     # Provide the vertex property value, keys will be added by the graph implementation
     # Vertex keys will be in the provided order 1....n 
-    test_vertices:List[Vertices] = [[1,2,3,4,5,6],  [2, 7, 5, 2, 10, 6, 9, 5, 11, 4]]
+    test_vertices:List[Vertex_Input] = [[1,2,3,4,5,6],  [2, 7, 5, 2, 10, 6, 9, 5, 11, 4], [2,1,3, 0, 4]] 
     
     # Undirected_edges
     # Edges must be according to key values of vertices, this is because properties (vertex value) can be non unique
-    test_edges:List[Edges]= [[(1,5), (1,2), (2,5), (2,3), (3,4), (4,5), (4,6)], [(1,2), (1,3), (2,4), (2,5), (2, 6), (3,7), (6, 8), (6, 9), (7, 10)]]
+    test_edges:List[Edge_Input]= [[(1,5), (1,2), (2,5), (2,3), (3,4), (4,5), (4,6)], [(1,2), (1,3), (2,4), (2,5), (2, 6), (3,7), (6, 8), (6, 9), (7, 10)],  [(1,2,1), (1,3,2), (2,4,3), (2,3,4), (3,4,7), (3,5,3),(4,5, 8)]]
    
-    graph = Graph(test_vertices[0], test_edges[0])
+    graph = Graph(test_vertices[2], test_edges[2])
     print(graph.bfs(1))
     print(graph.dfs(1))
-    print(graph.dijsktra(1,6))
+    print(graph.dijsktra(1,5))
