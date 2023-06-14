@@ -2,13 +2,14 @@
 Author: Sadeeptha Bandara
 '''
 from typing import List, Tuple, Optional,  Any
-
+import heapq
 
 # Custom types
 Key = int
 Prop = Any
+Weight = float 
 Vertices = List[Prop]
-Edges = List[Tuple[Key, Key]]
+Edges = List[Tuple[Key, Key]] | List[Tuple[Key, Key, Weight]] 
 
 
 '''
@@ -28,12 +29,14 @@ class Graph:
             self.vertices[key]  = Vertex(key, prop)
 
         # Set edges
-        for u_key, v_key in edge_tuples:
-            u = self.find_vertex(u_key)
-            v = self.find_vertex(v_key)
+        for elem in edge_tuples:
+            u = self.find_vertex(elem[0])
+            v = self.find_vertex(elem[1])
 
-            u.add_edge(Edge(u, v))
-            v.add_edge(Edge(v, u))
+            w = 1 if len(elem) == 2 else elem[2]
+
+            u.add_edge(Edge(u, v, w))
+            v.add_edge(Edge(v, u, w))
 
     '''
     Convenience function to find a vertex. Abstracted to allow easy modification
@@ -112,11 +115,69 @@ class Graph:
     '''
     Dijsktra's algorithm to find the shortest path to any vertex
     O(vlogv + elogv) --> O(elogv) dominant factor
+    o(v* heap serve + e * heap update)
     Requires to maintain priority queue to find shortest path
+    Adding types made this seem more complicated than it is
     '''
-    def dijsktra(self, k:Key)-> List[Key]:
-        pass
+    def dijsktra(self, src_key:Key, sink_key:Key):
+        discovered: List[Tuple(Weight, Key)] = []   # Priority queue to serve nearest vertex
+        distances:List[Key,Prop, Weight] = []  # Distances of finalized vertices
 
+        # Init
+        src = self.find_vertex(src_key)
+        src.distance = 0
+        src.discovered = True
+        heapq.heappush(discovered, (src.distance, src.get_key()))
+
+        sink = self.find_vertex(sink_key)
+
+        # Go over each connected vertex
+        while len(discovered) > 0:
+            u_key = heapq.heappop(discovered)[1]
+            u = self.find_vertex(u_key)
+            u.visited = True
+            distances.append((u.get_key(), u.get_property(),  u.distance))
+
+            # Terminate if sink reached
+            if u is sink:
+                res = self.__backtrack(u)
+                self.reset()
+                return u.distance, res, distances
+
+            # Edge relaxation
+            for edge in u.get_edges():
+                v = edge.v
+
+                # Discover vertex for the first time
+                if not v.discovered:
+                    v.discovered = True
+                    v.distance = u.distance + edge.w
+                    v.previous = u
+                    heapq.heappush(discovered, (v.distance, v.get_key()))
+                    continue
+                
+                # Update distance if shorter path found
+                if not v.visited:
+                    new_dist = u.distance + edge.w
+                    if v.distance > new_dist:
+                        v.distance = new_dist
+                        v.previous = u
+
+        self.reset()
+
+        # Destination is not reachable
+        return float('inf'), [], distances
+    
+
+    def __backtrack(self, curr:'Vertex') -> List[Tuple[Key, Prop]]:
+        res = []
+        while curr.previous is not None:
+            previous = curr.previous
+            key = previous.get_key()
+            prop = previous.get_property()
+            res.append((key, prop))
+
+        return res
 
 
 '''
@@ -129,7 +190,8 @@ class Vertex:
         self.__edges: List[Edge] = []
         self.discovered:bool = False
         self.visited:bool = False
-        self.distance:float = 0
+        self.distance:Weight = 0
+        self.previous: Optional[Vertex] = None
 
     def __str__(self) -> str:
         return str(self.__key)
@@ -141,6 +203,7 @@ class Vertex:
         self.discovered = False
         self.visited = False
         self.distance = 0
+        self.previous = None
 
     def get_edges(self) -> List['Edge']:
         return list(self.__edges)
@@ -148,9 +211,12 @@ class Vertex:
     def get_property(self) -> Prop:
         return self.__prop
     
+    def get_key(self) -> Key:
+        return Key(self.__key)
+    
 
 class Edge:
-     def __init__(self,u:Vertex, v:Vertex, w: Optional[float]=None) -> None:
+     def __init__(self,u:Vertex, v:Vertex, w: float=1) -> None:
           self.u = u
           self.v = v
           self.w = w
@@ -171,3 +237,4 @@ if __name__ == "__main__":
     graph = Graph(test_vertices[0], test_edges[0])
     print(graph.bfs(1))
     print(graph.dfs(1))
+    print(graph.dijsktra(1,6))
