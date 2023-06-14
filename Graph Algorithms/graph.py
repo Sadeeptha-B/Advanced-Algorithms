@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional,  Any
 # Custom types
 Key = int
 Prop = Any
-Vertices = List[Tuple[Key, Prop]]
+Vertices = List[Prop]
 Edges = List[Tuple[Key, Key]]
 
 
@@ -17,17 +17,15 @@ Graph class with bfs, dfs, shortest distance implementations
 class Graph:
     # Adjacency list representation
     # O(E)
-    def __init__(self, vertex_keys: Vertices, edge_tuples: Edges) -> None:
+    def __init__(self, vertices: Vertices, edge_tuples: Edges) -> None:
 
         # If supporting non-int keys will need to modify
-
-        max_key = max(vertex_keys, key=lambda elem:elem[0])[0]
-        self.vertices: List[Optional[Vertex]] = [None] * (max_key+1)
+        self.vertices: List[Optional[Vertex]] = [None] * (len(vertices) + 1)
         
         # Set vertices
-        for key, prop in vertex_keys:
-            self.vertices[key] = Vertex(key, prop)
-
+        for ind, prop in enumerate(vertices):
+            key = ind + 1
+            self.vertices[key]  = Vertex(key, prop)
 
         # Set edges
         for u_key, v_key in edge_tuples:
@@ -71,7 +69,8 @@ class Graph:
                     res.append(v.get_property())
                     v.discovered = True
 
-            u = discovered.pop(0) # Linked list implmt O(1)
+            u = discovered.pop(0) # Linked list implmt O(1)/ 
+            # or could've used pointers with termination condition
 
         self.reset()
         return res
@@ -79,7 +78,7 @@ class Graph:
     '''
     Reset vertex marking 
     '''
-    def reset(self):
+    def reset(self)-> None:
         for vertex in self.vertices:
             if vertex is None:
                 continue
@@ -91,7 +90,7 @@ class Graph:
     Depth first search
     Provide key of starting node
     '''
-    def dfs(self, k: Key)-> List[Key]:
+    def dfs(self, k: Key)-> List[Prop]:
         res = []
         u = self.find_vertex(k)
 
@@ -100,7 +99,7 @@ class Graph:
         return res
         
 
-    def __dfs_aux(self, u:'Vertex', res:List[Key])-> None:
+    def __dfs_aux(self, u:'Vertex', res:List[Prop])-> None:
         res.append(u.get_property())
         u.visited = True
 
@@ -110,8 +109,14 @@ class Graph:
                 self.__dfs_aux(v, res)
 
 
+    '''
+    Dijsktra's algorithm to find the shortest path to any vertex
+    O(vlogv + elogv) --> O(elogv) dominant factor
+    Requires to maintain priority queue to find shortest path
+    '''
     def dijsktra(self, k:Key)-> List[Key]:
         pass
+
 
 
 '''
@@ -124,6 +129,7 @@ class Vertex:
         self.__edges: List[Edge] = []
         self.discovered:bool = False
         self.visited:bool = False
+        self.distance:float = 0
 
     def __str__(self) -> str:
         return str(self.__key)
@@ -134,19 +140,17 @@ class Vertex:
     def reset(self)-> None:
         self.discovered = False
         self.visited = False
+        self.distance = 0
 
     def get_edges(self) -> List['Edge']:
         return list(self.__edges)
-    
-    def get_key(self)-> Key:
-        return Key(self.__key)
     
     def get_property(self) -> Prop:
         return self.__prop
     
 
 class Edge:
-     def __init__(self,u:Vertex, v:Vertex, w: Optional[int]=None) -> None:
+     def __init__(self,u:Vertex, v:Vertex, w: Optional[float]=None) -> None:
           self.u = u
           self.v = v
           self.w = w
@@ -156,11 +160,14 @@ class Edge:
 
 if __name__ == "__main__":
     
+    # Provide the vertex property value, keys will be added by the graph implementation
+    # Vertex keys will be in the provided order 1....n 
+    test_vertices:List[Vertices] = [[1,2,3,4,5,6],  [2, 7, 5, 2, 10, 6, 9, 5, 11, 4]]
+    
     # Undirected_edges
-    test_vertices:List[Vertices] = [[(1,1),(2,2),(3,3),(4,4),(5,5),(6,6)],  [(1,2), (2,7), (3,5), (4, 2), (5,10), (6, 6), (7, 9), (8, 5), (9, 11), (10, 4)]]
+    # Edges must be according to key values of vertices, this is because properties (vertex value) can be non unique
     test_edges:List[Edges]= [[(1,5), (1,2), (2,5), (2,3), (3,4), (4,5), (4,6)], [(1,2), (1,3), (2,4), (2,5), (2, 6), (3,7), (6, 8), (6, 9), (7, 10)]]
    
-    graph = Graph(test_vertices[1], test_edges[1])
+    graph = Graph(test_vertices[0], test_edges[0])
     print(graph.bfs(1))
     print(graph.dfs(1))
-
