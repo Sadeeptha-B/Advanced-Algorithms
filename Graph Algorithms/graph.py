@@ -129,8 +129,6 @@ class Graph:
         src.discovered = True
         heapq.heappush(discovered, (src.distance, src.get_key()))
 
-        sink = self.find_vertex(sink_key)
-
         # Go over each connected vertex
         while len(discovered) > 0:
             u_key = heapq.heappop(discovered)[1]
@@ -139,10 +137,11 @@ class Graph:
             distances.append((u.get_key(), u.get_property(),  u.distance))
 
             # Terminate if sink reached
-            if u is sink:
+            if u_key == sink_key:
                 res = self.__backtrack(u)
+                dist = u.distance
                 self.reset()
-                return u.distance, res, distances
+                return dist, res, distances
 
             # Edge relaxation
             for edge in u.get_edges():
@@ -160,6 +159,11 @@ class Graph:
                 if not v.visited:
                     new_dist = u.distance + edge.w
                     if v.distance > new_dist:
+                        # Update value on heap
+                        ind = discovered.index((v.distance, v.get_key()))     
+                        discovered.pop(ind)
+                        heapq.heappush(discovered, (new_dist, v.get_key()))
+
                         v.distance = new_dist
                         v.previous = u
 
@@ -176,7 +180,8 @@ class Graph:
             key = previous.get_key()
             prop = previous.get_property()
             res.append((key, prop))
-
+            curr = previous
+            
         return res
 
 
